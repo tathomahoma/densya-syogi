@@ -24,24 +24,30 @@ window.DenshaShogi = window.DenshaShogi || {};
   ns.ROWS = 6;
   ns.COLS = 7;
 
+  ns.PROMOTION_ZONE = 2;
+
   ns.PIECE_TYPES = {
     futsuu: {
       name: 'ふつう',
+      promotedName: 'かいそく',
       symbol: '◯',
       image: { red: 'assets/images/red-futsuu.svg', blue: 'assets/images/blue-futsuu.svg' },
     },
     tokkyuu: {
       name: 'とっきゅう',
+      promotedName: 'スーパーとっきゅう',
       symbol: '△',
       image: { red: 'assets/images/red-tokkyuu.svg', blue: 'assets/images/blue-tokkyuu.svg' },
     },
     kamotsu: {
       name: 'かもつ',
+      promotedName: 'スーパーかもつ',
       symbol: '□',
       image: { red: 'assets/images/red-kamotsu.svg', blue: 'assets/images/blue-kamotsu.svg' },
     },
     shinkansen: {
       name: 'しんかんせん',
+      promotedName: 'スーパーしんかんせん',
       symbol: '☆',
       image: { red: 'assets/images/red-shinkansen.svg', blue: 'assets/images/blue-shinkansen.svg' },
     },
@@ -52,14 +58,51 @@ window.DenshaShogi = window.DenshaShogi || {};
    * @param {Side} side
    * @returns {{dr: number, dc: number}[]}
    */
-  function moveOffsets(type, side) {
+  function moveOffsets(type, side, promoted) {
     var forward = side === 'red' ? 1 : -1;
 
+    if (!promoted) {
+      switch (type) {
+        case 'futsuu':
+          return [{ dr: forward, dc: 0 }];
+
+        case 'tokkyuu':
+          return [
+            { dr: 1, dc: 0 },
+            { dr: -1, dc: 0 },
+            { dr: 0, dc: 1 },
+            { dr: 0, dc: -1 },
+          ];
+
+        case 'kamotsu':
+          return [
+            { dr: 1, dc: 1 },
+            { dr: 1, dc: -1 },
+            { dr: -1, dc: 1 },
+            { dr: -1, dc: -1 },
+          ];
+
+        case 'shinkansen':
+          return [
+            { dr: 1, dc: 0 },
+            { dr: -1, dc: 0 },
+            { dr: 0, dc: 1 },
+            { dr: 0, dc: -1 },
+            { dr: 1, dc: 1 },
+            { dr: 1, dc: -1 },
+            { dr: -1, dc: 1 },
+            { dr: -1, dc: -1 },
+          ];
+
+        default:
+          return [];
+      }
+    }
+
+    // 成り後の動き
     switch (type) {
       case 'futsuu':
-        return [{ dr: forward, dc: 0 }];
-
-      case 'tokkyuu':
+        // かいそく: 前後左右に1マス（とっきゅうと同じ）
         return [
           { dr: 1, dc: 0 },
           { dr: -1, dc: 0 },
@@ -67,15 +110,29 @@ window.DenshaShogi = window.DenshaShogi || {};
           { dr: 0, dc: -1 },
         ];
 
-      case 'kamotsu':
+      case 'tokkyuu':
+        // スーパーとっきゅう: 銀将と同じ（前1＋斜め4方向）
         return [
+          { dr: forward, dc: 0 },
           { dr: 1, dc: 1 },
           { dr: 1, dc: -1 },
           { dr: -1, dc: 1 },
           { dr: -1, dc: -1 },
         ];
 
+      case 'kamotsu':
+        // スーパーかもつ: 金将と同じ（前後左右＋前斜め）
+        return [
+          { dr: forward, dc: 0 },
+          { dr: -forward, dc: 0 },
+          { dr: 0, dc: 1 },
+          { dr: 0, dc: -1 },
+          { dr: forward, dc: 1 },
+          { dr: forward, dc: -1 },
+        ];
+
       case 'shinkansen':
+        // スーパーしんかんせん: 全方位に2マスまで（movablePositions で range 処理）
         return [
           { dr: 1, dc: 0 },
           { dr: -1, dc: 0 },
@@ -114,19 +171,24 @@ window.DenshaShogi = window.DenshaShogi || {};
   ns.movablePositions = function(pieces, piece) {
     if (piece.captured) return [];
 
-    var offsets = moveOffsets(piece.type, piece.side);
+    var offsets = moveOffsets(piece.type, piece.side, piece.promoted);
     var result = [];
+    var range = (piece.promoted && piece.type === 'shinkansen') ? 2 : 1;
 
     for (var i = 0; i < offsets.length; i++) {
-      var newRow = piece.pos.row + offsets[i].dr;
-      var newCol = piece.pos.col + offsets[i].dc;
+      for (var step = 1; step <= range; step++) {
+        var newRow = piece.pos.row + offsets[i].dr * step;
+        var newCol = piece.pos.col + offsets[i].dc * step;
 
-      if (newRow < 1 || newRow > ns.ROWS || newCol < 1 || newCol > ns.COLS) continue;
+        if (newRow < 1 || newRow > ns.ROWS || newCol < 1 || newCol > ns.COLS) break;
 
-      var occupant = ns.pieceAt(pieces, newRow, newCol);
-      if (occupant && occupant.side === piece.side) continue;
+        var occupant = ns.pieceAt(pieces, newRow, newCol);
+        if (occupant && occupant.side === piece.side) break;
 
-      result.push({ row: newRow, col: newCol });
+        result.push({ row: newRow, col: newCol });
+
+        if (occupant) break;
+      }
     }
 
     return result;
@@ -144,6 +206,7 @@ window.DenshaShogi = window.DenshaShogi || {};
         type: type,
         pos: { row: row, col: col },
         captured: false,
+        promoted: false,
       };
     }
 

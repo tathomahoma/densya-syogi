@@ -74,7 +74,20 @@
     <li>「やめる」でタイトルに戻る</li>
   </ul>
 
-  <h3>段階5: 仕上げ</h3>
+  <h3>段階5: 成り</h3>
+  <ul class="checklist">
+    <li>相手陣（最後の2行）に入った駒が自動で成る</li>
+    <li>成った駒に★バッジと金色の光が表示される</li>
+    <li>成りの効果音（上昇音）が鳴る</li>
+    <li>かいそく（成りふつう）は前後左右に動ける</li>
+    <li>スーパーとっきゅう（成りとっきゅう）は銀将の動きになる</li>
+    <li>スーパーかもつ（成りかもつ）は金将の動きになる</li>
+    <li>スーパーしんかんせん（成りしんかんせん）は全方位2マスずつ動ける</li>
+    <li>成りしんかんせんは途中の駒を飛び越えられない</li>
+    <li>もどすで成りが取り消される</li>
+  </ul>
+
+  <h3>段階6: 仕上げ</h3>
   <ul class="checklist">
     <li>駒を置いた時に「コトッ」音が鳴る</li>
     <li>駒を取った時に「ぽふっ」音＋パーティクルが出る</li>
@@ -168,6 +181,45 @@
           return !occ || occ.side !== cornerPiece.side;
         });
         assert('自分の駒がいるマスには動けない', blocked);
+
+        // --- 成りテスト ---
+
+        // ふつうが成ったら前後左右に動ける
+        var promotedFutsuu = { id: 'test-pf', side: 'red', type: 'futsuu', pos: { row: 4, col: 4 }, captured: false, promoted: true };
+        var pfMoves = ns.movablePositions([promotedFutsuu], promotedFutsuu);
+        assert('成りふつう（かいそく）は前後左右4方向に動ける', pfMoves.length === 4);
+
+        // とっきゅうが成ったら銀将の動き（前1＋斜め4）
+        var promotedTokkyuu = { id: 'test-pt', side: 'red', type: 'tokkyuu', pos: { row: 3, col: 4 }, captured: false, promoted: true };
+        var ptMoves = ns.movablePositions([promotedTokkyuu], promotedTokkyuu);
+        assert('成りとっきゅうは5方向に動ける（銀将）', ptMoves.length === 5);
+
+        // かもつが成ったら金将の動き（前後左右＋前斜め）
+        var promotedKamotsu = { id: 'test-pk', side: 'red', type: 'kamotsu', pos: { row: 3, col: 4 }, captured: false, promoted: true };
+        var pkMoves = ns.movablePositions([promotedKamotsu], promotedKamotsu);
+        assert('成りかもつは6方向に動ける（金将）', pkMoves.length === 6);
+
+        // しんかんせんが成ったら全方位2マス
+        var promotedShinkansen = { id: 'test-ps', side: 'red', type: 'shinkansen', pos: { row: 3, col: 4 }, captured: false, promoted: true };
+        var psMoves = ns.movablePositions([promotedShinkansen], promotedShinkansen);
+        assert('成りしんかんせんは全方位2マス（最大16マス、盤内に収まる分）', psMoves.length === 16);
+
+        // しんかんせんが成った時、途中に駒がいたら飛び越えられない
+        var blocker = { id: 'test-blocker', side: 'red', type: 'futsuu', pos: { row: 4, col: 4 }, captured: false, promoted: false };
+        var psBlockedMoves = ns.movablePositions([promotedShinkansen, blocker], promotedShinkansen);
+        assert('成りしんかんせんは味方駒を飛び越えられない', psBlockedMoves.length === 14);
+
+        // 成り判定テスト: あかがrow5に移動したら成る
+        var promState = ns.startGame({ phase: 'title' });
+        var testPiece = { id: 'test-nari', side: 'red', type: 'futsuu', pos: { row: 4, col: 4 }, captured: false, promoted: false };
+        promState = Object.assign({}, promState, {
+          pieces: [testPiece, { id: 'bs', side: 'blue', type: 'shinkansen', pos: { row: 6, col: 4 }, captured: false, promoted: false }],
+          selectedPieceId: 'test-nari',
+        });
+        var promResult = ns.movePiece(promState, 5, 4);
+        assert('あかの駒がrow5に入ると成る', promResult.promoted === true);
+        var movedPiece = promResult.state.pieces.find(function(p) { return p.id === 'test-nari'; });
+        assert('成った駒のpromotedフラグがtrue', movedPiece.promoted === true);
       });
     })();
   </script>

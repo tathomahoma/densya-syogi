@@ -174,17 +174,28 @@ window.DenshaShogi = window.DenshaShogi || {};
   function createPieceElement(piece) {
     var el = document.createElement('div');
     el.classList.add('piece', 'piece-' + piece.side);
+    if (piece.promoted) {
+      el.classList.add('piece-promoted');
+    }
 
     var typeInfo = ns.PIECE_TYPES[piece.type];
+    var displayName = piece.promoted ? typeInfo.promotedName : typeInfo.name;
 
     var img = document.createElement('img');
     img.src = typeInfo.image[piece.side];
-    img.alt = typeInfo.name;
+    img.alt = displayName;
     img.classList.add('piece-img');
     img.draggable = false;
     el.appendChild(img);
 
-    el.setAttribute('aria-label', (piece.side === 'red' ? 'あか' : 'あお') + 'の' + typeInfo.name);
+    if (piece.promoted) {
+      var badge = document.createElement('div');
+      badge.classList.add('promoted-badge');
+      badge.textContent = '★';
+      el.appendChild(badge);
+    }
+
+    el.setAttribute('aria-label', (piece.side === 'red' ? 'あか' : 'あお') + 'の' + displayName);
 
     return el;
   }

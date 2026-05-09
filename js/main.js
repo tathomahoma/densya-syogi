@@ -55,6 +55,10 @@
             ns.playMoveSound();
           }
 
+          if (result.promoted) {
+            ns.playPromoteSound();
+          }
+
           render();
 
           if (state.phase === 'win') {

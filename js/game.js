@@ -101,9 +101,21 @@ window.DenshaShogi = window.DenshaShogi || {};
 
     var capturedPiece = ns.pieceAt(state.pieces, toRow, toCol);
 
+    // 成り判定: 相手陣の最後2行に入ったら成る
+    var shouldPromote = false;
+    if (!piece.promoted) {
+      if (side === 'red' && toRow >= ns.ROWS - ns.PROMOTION_ZONE + 1) {
+        shouldPromote = true;
+      } else if (side === 'blue' && toRow <= ns.PROMOTION_ZONE) {
+        shouldPromote = true;
+      }
+    }
+
     var newPieces = state.pieces.map(function(p) {
       if (p.id === piece.id) {
-        return Object.assign({}, p, { pos: { row: toRow, col: toCol } });
+        var updated = Object.assign({}, p, { pos: { row: toRow, col: toCol } });
+        if (shouldPromote) updated.promoted = true;
+        return updated;
       }
       if (capturedPiece && p.id === capturedPiece.id) {
         return Object.assign({}, p, { captured: true });
@@ -127,7 +139,7 @@ window.DenshaShogi = window.DenshaShogi || {};
       prevState: state,
     };
 
-    return { state: newState, moved: true, captured: capturedPiece };
+    return { state: newState, moved: true, captured: capturedPiece, promoted: shouldPromote };
   };
 
   /**
