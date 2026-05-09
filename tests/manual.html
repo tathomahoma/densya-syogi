@@ -31,7 +31,7 @@
 
   <h3>段階1: 盤面</h3>
   <ul class="checklist">
-    <li>6×5（縦6行×横5列）の盤が画面中央に表示される</li>
+    <li>6×7（縦6行×横7列）の盤が画面中央に表示される</li>
     <li>マスは交互の色のチェッカー柄</li>
     <li>スマホ縦持ちで画面幅にフィットする</li>
     <li>タイトル画面の「はじめる」でゲーム画面に遷移する</li>
@@ -114,7 +114,7 @@
         assert('あかのしんかんせんは row=1, col=4', redShinkansen.pos.row === 1 && redShinkansen.pos.col === 4);
 
         var blueShinkansen = pieces.find(function(p) { return p.side === 'blue' && p.type === 'shinkansen'; });
-        assert('あおのしんかんせんは row=5, col=4', blueShinkansen.pos.row === 5 && blueShinkansen.pos.col === 4);
+        assert('あおのしんかんせんは row=6, col=4', blueShinkansen.pos.row === 6 && blueShinkansen.pos.col === 4);
 
         var redFutsuu = pieces.find(function(p) { return p.side === 'red' && p.type === 'futsuu' && p.pos.col === 3; });
         var futsuuMoves = ns.movablePositions(pieces, redFutsuu);
