@@ -21,8 +21,8 @@ window.DenshaShogi = window.DenshaShogi || {};
 (function(ns) {
   'use strict';
 
-  ns.ROWS = 7;
-  ns.COLS = 5;
+  ns.ROWS = 5;
+  ns.COLS = 7;
 
   ns.PIECE_TYPES = {
     futsuu: {
@@ -148,17 +148,17 @@ window.DenshaShogi = window.DenshaShogi || {};
     }
 
     return [
-      make('red', 'tokkyuu', 1, 1),
-      make('red', 'shinkansen', 1, 3),
-      make('red', 'kamotsu', 1, 5),
-      make('red', 'futsuu', 2, 2),
-      make('red', 'futsuu', 2, 4),
+      make('red', 'tokkyuu', 1, 2),
+      make('red', 'shinkansen', 1, 4),
+      make('red', 'kamotsu', 1, 6),
+      make('red', 'futsuu', 2, 3),
+      make('red', 'futsuu', 2, 5),
 
-      make('blue', 'kamotsu', 7, 1),
-      make('blue', 'shinkansen', 7, 3),
-      make('blue', 'tokkyuu', 7, 5),
-      make('blue', 'futsuu', 6, 2),
-      make('blue', 'futsuu', 6, 4),
+      make('blue', 'kamotsu', 5, 2),
+      make('blue', 'shinkansen', 5, 4),
+      make('blue', 'tokkyuu', 5, 6),
+      make('blue', 'futsuu', 4, 3),
+      make('blue', 'futsuu', 4, 5),
     ];
   };
 

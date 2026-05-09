@@ -111,23 +111,23 @@
         assert('初期配置: ふつう各2個', pieces.filter(function(p) { return p.type === 'futsuu'; }).length === 4);
 
         var redShinkansen = pieces.find(function(p) { return p.side === 'red' && p.type === 'shinkansen'; });
-        assert('あかのしんかんせんは row=1, col=3', redShinkansen.pos.row === 1 && redShinkansen.pos.col === 3);
+        assert('あかのしんかんせんは row=1, col=4', redShinkansen.pos.row === 1 && redShinkansen.pos.col === 4);
 
         var blueShinkansen = pieces.find(function(p) { return p.side === 'blue' && p.type === 'shinkansen'; });
-        assert('あおのしんかんせんは row=7, col=3', blueShinkansen.pos.row === 7 && blueShinkansen.pos.col === 3);
+        assert('あおのしんかんせんは row=5, col=4', blueShinkansen.pos.row === 5 && blueShinkansen.pos.col === 4);
 
-        var redFutsuu = pieces.find(function(p) { return p.side === 'red' && p.type === 'futsuu' && p.pos.col === 2; });
+        var redFutsuu = pieces.find(function(p) { return p.side === 'red' && p.type === 'futsuu' && p.pos.col === 3; });
         var futsuuMoves = ns.movablePositions(pieces, redFutsuu);
         assert('ふつうでんしゃは前に1マス動ける', futsuuMoves.length === 1);
         assert('ふつうでんしゃの移動先は row+1', futsuuMoves[0].row === redFutsuu.pos.row + 1);
 
         var redTokkyuu = pieces.find(function(p) { return p.side === 'red' && p.type === 'tokkyuu'; });
         var tokkyuuMoves = ns.movablePositions(pieces, redTokkyuu);
-        assert('とっきゅうは前後左右に動ける（初期位置では2方向）', tokkyuuMoves.length === 2);
+        assert('とっきゅうは前後左右に動ける（初期位置(1,2)では3方向）', tokkyuuMoves.length === 3);
 
         var redKamotsu = pieces.find(function(p) { return p.side === 'red' && p.type === 'kamotsu'; });
         var kamotsuMoves = ns.movablePositions(pieces, redKamotsu);
-        assert('かもつは初期位置では動けない（斜め先が盤外か自駒）', kamotsuMoves.length === 0);
+        assert('かもつは初期位置(1,6)では1方向（斜め(2,7)のみ）', kamotsuMoves.length === 1);
 
         var testKamotsu = { id: 'test-kamotsu', side: 'red', type: 'kamotsu', pos: { row: 3, col: 3 }, captured: false };
         var kamotsuCenterMoves = ns.movablePositions([testKamotsu], testKamotsu);
@@ -143,11 +143,11 @@
         assert('ゲーム開始後は red_turn', state.phase === 'red_turn');
         assert('先手はあか', ns.currentSide(state) === 'red');
 
-        var redPiece = state.pieces.find(function(p) { return p.side === 'red' && p.type === 'futsuu' && p.pos.col === 2; });
+        var redPiece = state.pieces.find(function(p) { return p.side === 'red' && p.type === 'futsuu' && p.pos.col === 3; });
         state = ns.selectPiece(state, redPiece.id);
         assert('駒を選択できる', state.selectedPieceId === redPiece.id);
 
-        var moveResult = ns.movePiece(state, 3, 2);
+        var moveResult = ns.movePiece(state, 3, 3);
         assert('ふつうが前に移動できる', moveResult.moved === true);
         assert('移動後は blue_turn', moveResult.state.phase === 'blue_turn');
 

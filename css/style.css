@@ -168,16 +168,16 @@ html, body {
 .board {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(7, 1fr);
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(5, 1fr);
   gap: 2px;
   padding: 4px;
   background: #8b7355;
   border: 4px solid #6b5335;
   border-radius: 8px;
-  aspect-ratio: 5 / 7;
-  max-width: min(90vw, 400px);
-  max-height: min(75vh, 560px);
+  aspect-ratio: 7 / 5;
+  max-width: min(95vw, 500px);
+  max-height: min(60vh, 360px);
   width: 100%;
   overflow: hidden;
 }
