@@ -14,7 +14,7 @@
 
 ## 1. 技術スタック（決定事項）
 
-- **HTML / CSS / Vanilla JavaScript（ES Modules）のみ**。
+- **HTML / CSS / Vanilla JavaScript（IIFE パターン）のみ**。
 - フレームワーク（React, Vue, Svelte 等）は **使わない**。
 - ビルドツール（Vite, webpack, npm 等）は **使わない**。`index.html` をダブルクリックで動くこと。
 - 外部 CDN への依存も**原則禁止**（オフラインで動作することが要件）。例外的に許可する場合は `SPEC.md` の §7 に追記すること。
@@ -57,14 +57,15 @@
 │   ├── pieces.js      — 駒の定義と「どこに動けるか」関数
 │   └── ui.js          — ターン表示・ボタン・効果音・勝利演出
 └── assets/
-    ├── images/        — SVG 推奨。1ファイル 10KB 以下を目安に。
-    └── sounds/        — 短い効果音（< 1秒）。mp3 と ogg を両方用意。
+    └── images/        — SVG 推奨。1ファイル 10KB 以下を目安に。
 ```
 
 ### モジュール境界のルール
+- すべての JS ファイルは IIFE パターンで `window.DenshaShogi` 名前空間に関数を登録する。`file://` プロトコルでの動作を保証するため ES Modules は使わない。
 - `game.js` は **DOM に一切触らない**。テストしやすくするため、純粋関数とイミュータブルな状態管理に保つ。
-- `pieces.js` の関数は `(board, piece, position) => Position[]` のような形で、副作用を持たない。
+- `pieces.js` の関数は `(pieces, piece) => Position[]` のような形で、副作用を持たない。
 - 描画関連は `board.js` と `ui.js` に閉じ込める。
+- 効果音は Web Audio API で合成する（音声ファイル不要）。`ui.js` に集約。
 
 ## 4. コーディング規約
 
@@ -74,9 +75,9 @@
 - 変数名・関数名は **英語の lowerCamelCase**（例: `selectedPiece`, `movablePositions`）。
   - ただしユーザーに見える定数（駒の表示名など）は日本語の文字列リテラルでよい：`{ name: 'えきちょう' }`。
 - ファイル先頭に簡潔な日本語コメントで「このファイルの責任」を 1〜3 行で書く。
-- マジックナンバー禁止。盤サイズ・駒数などは `js/constants.js` 相当を `game.js` 冒頭に集約する。
+- マジックナンバー禁止。盤サイズ（`ROWS`, `COLS`）・成りゾーン（`PROMOTION_ZONE`）などは `pieces.js` 冒頭の `ns.*` に集約する。
 - console.log のデバッグ出力は**コミット前に消す**。
-- グローバル変数は使わない。すべて ES Modules で `export` / `import`。
+- グローバル変数は `window.DenshaShogi` 名前空間のみ許可。各ファイルは IIFE で閉じる。
 
 ### JSDoc の例
 ```js
@@ -93,17 +94,19 @@ function movablePositionsOf(board, piece) { ... }
 ```js
 /**
  * @typedef {Object} Position
- * @property {number} row  - 1〜5
- * @property {number} col  - 1〜5
+ * @property {number} row  - 1〜6
+ * @property {number} col  - 1〜7
  *
  * @typedef {'red' | 'blue'} Side
- * @typedef {'ekicho' | 'shinkansen' | 'kakueki'} PieceType
+ * @typedef {'futsuu' | 'tokkyuu' | 'kamotsu' | 'shinkansen'} PieceType
  *
  * @typedef {Object} Piece
  * @property {string} id
  * @property {Side} side
  * @property {PieceType} type
  * @property {Position} pos
+ * @property {boolean} captured
+ * @property {boolean} promoted
  */
 ```
 
@@ -122,7 +125,7 @@ function movablePositionsOf(board, piece) { ... }
 - アラートのような大きな効果音、点滅、ジャンプスケア演出。
 - 課金・購入を匂わせる UI。
 - 文字を読めない子に不利になる仕様（漢字、長文の説明、文字だけのボタン）。
-- 「将棋として正しい」を理由に未就学児が混乱するルール（持ち駒・成り・王手判定）を追加すること。
+- 「将棋として正しい」を理由に未就学児が混乱するルール（持ち駒・王手判定など）を追加すること。
 
 ## 7. コミット・PR の作法
 
