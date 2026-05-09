@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>でんしゃしょうぎ</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- タイトル画面 -->
+    <div id="title-screen" class="screen active">
+      <h1 class="title">でんしゃしょうぎ</h1>
+      <p class="subtitle">🚄 でんしゃで あそぶ しょうぎ 🚄</p>
+      <button id="start-btn" class="big-btn" aria-label="ゲームをはじめる">はじめる</button>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <div id="game-screen" class="screen">
+      <!-- ターン表示 -->
+      <div id="turn-display" class="turn-display" aria-live="polite"></div>
+
+      <!-- あお側の車庫 -->
+      <div id="blue-depot" class="depot blue-depot">
+        <span class="depot-label">あおの しゃこ</span>
+        <div class="depot-pieces"></div>
+      </div>
+
+      <!-- 盤面 -->
+      <div id="board-container">
+        <div id="board" class="board" role="grid" aria-label="しょうぎのばん"></div>
+      </div>
+
+      <!-- あか側の車庫 -->
+      <div id="red-depot" class="depot red-depot">
+        <span class="depot-label">あかの しゃこ</span>
+        <div class="depot-pieces"></div>
+      </div>
+
+      <!-- 操作ボタン -->
+      <div class="controls">
+        <button id="quit-btn" class="ctrl-btn" aria-label="やめる">やめる</button>
+        <button id="undo-btn" class="ctrl-btn" aria-label="もどす">もどす</button>
+      </div>
+    </div>
+
+    <!-- 勝利画面 -->
+    <div id="win-screen" class="screen">
+      <div id="win-message" class="win-message"></div>
+      <div class="win-buttons">
+        <button id="replay-btn" class="big-btn" aria-label="もういっかい">もういっかい</button>
+        <button id="quit-win-btn" class="big-btn secondary" aria-label="やめる">やめる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/pieces.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/board.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

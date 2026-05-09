@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <!-- EH500金太郎風 — 赤い機関車＋コンテナ -->
+  <g>
+    <!-- 機関車本体 -->
+    <rect x="6" y="26" width="32" height="30" rx="4" fill="#c03030" stroke="#801818" stroke-width="2"/>
+    <!-- 機関車の窓 -->
+    <rect x="10" y="30" width="12" height="8" rx="2" fill="#e09090"/>
+    <!-- 機関車の正面 -->
+    <rect x="26" y="28" width="10" height="26" rx="2" fill="#a02828"/>
+    <!-- ヘッドライト -->
+    <circle cx="34" cy="32" r="2.5" fill="#ffe040"/>
+    <!-- 金太郎の金マーク -->
+    <rect x="12" y="42" width="14" height="8" rx="2" fill="#e0b020" stroke="#c09010" stroke-width="1"/>
+    <!-- コンテナ -->
+    <rect x="40" y="30" width="32" height="24" rx="3" fill="#2060a0" stroke="#104080" stroke-width="1.5"/>
+    <!-- コンテナのライン -->
+    <rect x="42" y="36" width="28" height="3" fill="#1850a0"/>
+    <rect x="42" y="44" width="28" height="3" fill="#1850a0"/>
+    <!-- 車輪 -->
+    <circle cx="18" cy="58" r="4" fill="#555"/>
+    <circle cx="56" cy="58" r="4" fill="#555"/>
+    <!-- 連結器 -->
+    <rect x="36" y="46" width="6" height="4" rx="1" fill="#777"/>
+    <!-- レール -->
+    <rect x="4" y="60" width="72" height="3" rx="1" fill="#888"/>
+  </g>
+</svg>

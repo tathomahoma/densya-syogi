@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <!-- E5系はやぶさ風 — 緑ボディ＋白ライン＋ピンクアクセント -->
+  <g>
+    <!-- 車体 -->
+    <rect x="8" y="28" width="64" height="28" rx="6" fill="#1a8a50" stroke="#106030" stroke-width="2"/>
+    <!-- 白ライン -->
+    <rect x="8" y="40" width="64" height="4" fill="#ffffff"/>
+    <!-- ピンクライン -->
+    <rect x="8" y="44" width="64" height="3" fill="#e060a0"/>
+    <!-- 先頭のノーズ -->
+    <polygon points="72,30 82,42 72,54" fill="#1a8a50" stroke="#106030" stroke-width="1.5"/>
+    <!-- 窓 -->
+    <rect x="16" y="32" width="8" height="6" rx="1" fill="#80d0a0"/>
+    <rect x="28" y="32" width="8" height="6" rx="1" fill="#80d0a0"/>
+    <rect x="40" y="32" width="8" height="6" rx="1" fill="#80d0a0"/>
+    <rect x="52" y="32" width="8" height="6" rx="1" fill="#80d0a0"/>
+    <!-- 先頭窓 -->
+    <polygon points="64,33 73,38 73,46 64,51" fill="#60b080" stroke="#106030" stroke-width="1"/>
+    <!-- 車輪 -->
+    <circle cx="22" cy="58" r="4" fill="#555"/>
+    <circle cx="58" cy="58" r="4" fill="#555"/>
+    <!-- レール -->
+    <rect x="4" y="60" width="72" height="3" rx="1" fill="#888"/>
+  </g>
+</svg>

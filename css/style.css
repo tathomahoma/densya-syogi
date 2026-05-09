@@ -1,0 +1,378 @@
+/* でんしゃしょうぎ — メインスタイル */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', sans-serif;
+  background: #f5f0e8;
+  touch-action: manipulation;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- 画面切り替え --- */
+
+.screen {
+  display: none;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* --- タイトル画面 --- */
+
+#title-screen {
+  gap: 24px;
+  background: linear-gradient(180deg, #e8f4fd 0%, #f5f0e8 100%);
+}
+
+.title {
+  font-size: 40px;
+  color: #2c5f8a;
+  text-shadow: 2px 2px 0 #b8d8f0;
+  letter-spacing: 4px;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #7a8a6a;
+}
+
+/* --- ボタン --- */
+
+.big-btn {
+  min-width: 200px;
+  min-height: 72px;
+  padding: 16px 40px;
+  font-size: 28px;
+  font-family: inherit;
+  border: 4px solid #2c5f8a;
+  border-radius: 16px;
+  background: #4a90c4;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.1s;
+}
+
+.big-btn:active {
+  transform: scale(0.95);
+  background: #3a7ab0;
+}
+
+.big-btn.secondary {
+  background: #8a9a7a;
+  border-color: #6a7a5a;
+}
+
+.big-btn.secondary:active {
+  background: #7a8a6a;
+}
+
+/* --- ゲーム画面 --- */
+
+#game-screen {
+  justify-content: flex-start;
+  padding: 8px;
+  gap: 6px;
+}
+
+/* ターン表示 */
+
+.turn-display {
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 10px 0;
+  border-radius: 12px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.turn-display.red-turn {
+  background: #f8d0d0;
+  color: #a03030;
+}
+
+.turn-display.blue-turn {
+  background: #d0d8f8;
+  color: #3030a0;
+}
+
+/* 車庫 */
+
+.depot {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  min-height: 52px;
+}
+
+.depot-label {
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.blue-depot {
+  background: #e4eaf4;
+  color: #3050a0;
+}
+
+.red-depot {
+  background: #f4e4e4;
+  color: #a03030;
+}
+
+.depot-pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* --- 盤面 --- */
+
+#board-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+}
+
+.board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 2px;
+  padding: 4px;
+  background: #8b7355;
+  border: 4px solid #6b5335;
+  border-radius: 8px;
+  aspect-ratio: 5 / 7;
+  max-width: min(90vw, 400px);
+  max-height: min(75vh, 560px);
+  width: 100%;
+  overflow: hidden;
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+  min-width: 0;
+  min-height: 0;
+}
+
+.cell-light {
+  background: #f5edd6;
+}
+
+.cell-dark {
+  background: #e8dcc0;
+}
+
+/* 選択された駒のマス */
+.cell.selected {
+  box-shadow: inset 0 0 0 4px #f0c040;
+}
+
+/* 動けるマス */
+.cell.movable::after {
+  content: '';
+  position: absolute;
+  width: 36%;
+  height: 36%;
+  background: rgba(80, 180, 80, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* 取れる相手の駒 */
+.cell.capturable {
+  box-shadow: inset 0 0 0 4px #e08030;
+}
+
+/* --- 駒 --- */
+
+.piece {
+  width: 90%;
+  height: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  user-select: none;
+  pointer-events: none;
+  transition: transform 0.25s ease;
+  padding: 2px;
+}
+
+.piece-red {
+  background: radial-gradient(circle at 40% 35%, #f8d0d0, #f0a0a0);
+  border: 2px solid #c06060;
+}
+
+.piece-blue {
+  background: radial-gradient(circle at 40% 35%, #d0d8f8, #a0b0e0);
+  border: 2px solid #6080b0;
+}
+
+.piece-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* --- パーティクル演出 --- */
+
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #f0c040;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 20;
+  animation: particle-burst 0.45s ease-out forwards;
+}
+
+.particle:nth-child(odd) {
+  background: #f08060;
+}
+
+@keyframes particle-burst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(0.3);
+  }
+}
+
+/* --- 紙吹雪 --- */
+
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 100;
+  animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+
+/* --- 操作ボタン --- */
+
+.controls {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 8px;
+}
+
+.ctrl-btn {
+  flex: 1;
+  min-height: 52px;
+  font-size: 20px;
+  font-family: inherit;
+  border: 3px solid #888;
+  border-radius: 12px;
+  background: #e8e0d4;
+  color: #555;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.ctrl-btn:active {
+  transform: scale(0.95);
+  background: #d8d0c4;
+}
+
+/* --- 勝利画面 --- */
+
+#win-screen {
+  gap: 24px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.win-message {
+  font-size: 32px;
+  text-align: center;
+  line-height: 1.6;
+  padding: 20px;
+}
+
+.win-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* --- レスポンシブ --- */
+
+@media (max-width: 400px) {
+  .title {
+    font-size: 32px;
+  }
+
+  .turn-display {
+    font-size: 20px;
+    padding: 8px 0;
+  }
+
+  .piece {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 768px) {
+  .board {
+    max-width: 420px;
+    max-height: 504px;
+  }
+}
