@@ -101,12 +101,69 @@
 
   <h3>段階6: 仕上げ</h3>
   <ul class="checklist">
-    <li>駒を置いた時に「コトッ」音が鳴る</li>
-    <li>駒を取った時に「ぽふっ」音＋パーティクルが出る</li>
-    <li>勝利時に紙吹雪＋「ピンポン」音が鳴る</li>
     <li>「もどす」ボタンで1手戻せる（各プレイヤー2回まで）</li>
     <li>もどす回数が表示されている</li>
     <li>画面に漢字が一切表示されない</li>
+  </ul>
+
+  <h3>§5.5 効果音</h3>
+  <ul class="checklist">
+    <li>駒を選択した時に「ピッ」音（1000Hz、短い）が鳴る</li>
+    <li>ふつう・とっきゅう・かもつを動かした時にガタゴト音（低い2連打）が鳴る</li>
+    <li>しんかんせんを動かした時にシュー音（高音ノイズ）が鳴る</li>
+    <li>駒を取った時に「ぽふっ」音（低音ノイズ、80ms）が鳴る</li>
+    <li>駒を取った時にパーティクル演出が出る</li>
+    <li>成った時にキラーン音（鈴音、200ms）が鳴る</li>
+    <li>勝利時にファンファーレ（ドミソド↑→高音→キラキラ、約2.5秒）が鳴る</li>
+    <li>敗北側にピロリン音（上昇音、300ms）が1.5秒後に鳴る</li>
+    <li>勝利時に紙吹雪が降る</li>
+    <li>ミュートボタン（🔊）がゲーム画面・勝利画面の右上に表示される</li>
+    <li>ミュートボタンをタップすると全効果音が消え、アイコンが🔈に変わる</li>
+    <li>ミュート状態はページリロード後も保持される（localStorage）</li>
+    <li>音が重なった時に前の音が停止して新しい音だけが鳴る</li>
+    <li>ゲーム画面中、電車走行音BGM（ノイズ＋ガタンゴトン）がループ再生される</li>
+    <li>BGMはゲーム画面遷移時に0.5秒でフェードインする</li>
+    <li>「やめる」でタイトルに戻ると0.5秒でフェードアウトして停止する</li>
+    <li>勝利画面に遷移するとBGMがフェードアウトする</li>
+    <li>「もういっかい」で新しい対局を始めるとBGMが再び再生される</li>
+    <li>BGMはミュートボタンで他の効果音と一括でOFFになる</li>
+  </ul>
+
+  <h3>§5.7 チュートリアル</h3>
+  <ul class="checklist">
+    <li>初回起動時に「はじめる」を押すとチュートリアルが自動再生される</li>
+    <li>チュートリアル完了後はゲーム画面に遷移する</li>
+    <li>2回目以降の「はじめる」はチュートリアルをスキップして直接ゲームが始まる</li>
+    <li>タイトル画面に「🔍 あそびかた」ボタンが常に表示されている</li>
+    <li>「あそびかた」ボタンからいつでもチュートリアルを再生できる</li>
+    <li>ステップ1: 盤と駒がフェードインで表示される</li>
+    <li>ステップ2: 駒に指マーク（👆）が現れタップをデモする</li>
+    <li>ステップ3: 緑のまるが表示され、駒が滑って移動する</li>
+    <li>ステップ4: 相手の駒を取るデモ（取られる駒が縮小して消える）</li>
+    <li>ステップ5: 成りゾーン（金色ハイライト）に入って駒が★に変化する</li>
+    <li>ステップ6: しんかんせんを取って勝利→紙吹雪＋ファンファーレ</li>
+    <li>ステップインジケータ（●○○○○○）が現在位置を示す</li>
+    <li>「← もどる」ボタンで前のステップに戻れる（ステップ1では無効）</li>
+    <li>「スキップ」ボタンでチュートリアルを中断できる</li>
+    <li>最後のステップで「つぎへ →」が「はじめる！」に変わる</li>
+    <li>「あそびかた」から開いて「スキップ」するとタイトルに戻る</li>
+    <li>チュートリアル中にミュートボタンが表示される</li>
+  </ul>
+
+  <h3>§5.8 ピーク＋きけんマーク</h3>
+  <ul class="checklist">
+    <li>相手の駒をタップすると紫のリングで囲まれる（ピーク）</li>
+    <li>ピーク中の相手駒の動ける先に紫のまる（直径35%）が表示される</li>
+    <li>ピーク中に同じ駒をもう一度タップするとピーク解除される</li>
+    <li>ピーク中に別の相手駒をタップすると切り替わる</li>
+    <li>自分の駒を選択中に相手の駒をタップしても動作しない（相互排他）</li>
+    <li>自分の駒の選択中に無効なマスタップ→相手駒の上ならピークに遷移</li>
+    <li>「⚠️ あぶないよ サイン」がオンの時、相手に取られそうな自分の駒に「！」バッジが付く</li>
+    <li>きけんマーク（！）は黄色丸の中に「！」が表示される</li>
+    <li>ピーク中はきけんマークが薄く（opacity 0.3）なる</li>
+    <li>タイトル画面の「あぶないよ サイン」ボタンでオン/オフを切り替えられる</li>
+    <li>オフにするとすべてのきけんマークが非表示になる</li>
+    <li>ヒント設定はページリロード後も保持される（localStorage）</li>
   </ul>
 
   <script src="../js/pieces.js"></script>
@@ -232,6 +289,24 @@
         assert('あかの駒がrow5に入ると成る', promResult.promoted === true);
         var movedPiece = promResult.state.pieces.find(function(p) { return p.id === 'test-nari'; });
         assert('成った駒のpromotedフラグがtrue', movedPiece.promoted === true);
+
+        // --- §5.8 きけんマーク計算テスト ---
+        var threatPieces = [
+          { id: 'r-f', side: 'red', type: 'futsuu', pos: { row: 3, col: 4 }, captured: false, promoted: false },
+          { id: 'b-s', side: 'blue', type: 'shinkansen', pos: { row: 4, col: 4 }, captured: false, promoted: false },
+        ];
+        var threatened = ns.threatenedPieceIds(threatPieces, 'blue');
+        assert('あおのしんかんせんがあかのふつうに狙われている', threatened.indexOf('b-s') !== -1);
+
+        var threatened2 = ns.threatenedPieceIds(threatPieces, 'red');
+        assert('あかのふつうがあおのしんかんせんに狙われている', threatened2.indexOf('r-f') !== -1);
+
+        var safePieces = [
+          { id: 'r-f', side: 'red', type: 'futsuu', pos: { row: 1, col: 4 }, captured: false, promoted: false },
+          { id: 'b-s', side: 'blue', type: 'shinkansen', pos: { row: 6, col: 4 }, captured: false, promoted: false },
+        ];
+        var safeThreat = ns.threatenedPieceIds(safePieces, 'red');
+        assert('離れた駒はきけん判定されない', safeThreat.length === 0);
       });
     })();
   </script>

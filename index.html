@@ -8,11 +8,16 @@
 </head>
 <body>
   <div id="app">
+    <!-- ミュートボタン（ゲーム中・勝利画面で表示） -->
+    <button id="mute-btn" class="mute-btn" aria-label="おとの オン/オフ">🔊</button>
+
     <!-- タイトル画面 -->
     <div id="title-screen" class="screen active">
       <h1 class="title">でんしゃしょうぎ</h1>
       <p class="subtitle">🚄 でんしゃで あそぶ しょうぎ 🚄</p>
       <button id="start-btn" class="big-btn" aria-label="ゲームをはじめる">はじめる</button>
+      <button id="tutorial-btn" class="setting-btn" aria-label="あそびかたを みる">🔍 あそびかた</button>
+      <button id="hints-toggle" class="setting-btn" aria-label="あぶないよ サインの オン/オフ">⚠️ あぶないよ サイン：オン</button>
     </div>
 
     <!-- ゲーム画面 -->
@@ -44,6 +49,21 @@
       </div>
     </div>
 
+    <!-- チュートリアル画面 -->
+    <div id="tutorial-screen" class="screen">
+      <div id="tutorial-message" class="tutorial-message"></div>
+      <div class="tutorial-board-wrap">
+        <div id="tutorial-board" class="board tutorial-board"></div>
+        <div id="tutorial-pointer" class="tutorial-pointer">👆</div>
+      </div>
+      <div id="tutorial-dots" class="tutorial-dots"></div>
+      <div class="tutorial-nav">
+        <button id="tutorial-prev" class="tutorial-btn" aria-label="まえへ">← もどる</button>
+        <button id="tutorial-skip" class="tutorial-btn tutorial-btn-skip" aria-label="スキップ">スキップ</button>
+        <button id="tutorial-next" class="tutorial-btn tutorial-btn-primary" aria-label="つぎへ">つぎへ →</button>
+      </div>
+    </div>
+
     <!-- 勝利画面 -->
     <div id="win-screen" class="screen">
       <div id="win-message" class="win-message"></div>
@@ -58,6 +78,7 @@
   <script src="js/game.js"></script>
   <script src="js/board.js"></script>
   <script src="js/ui.js"></script>
+  <script src="js/tutorial.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

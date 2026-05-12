@@ -225,4 +225,30 @@ window.DenshaShogi = window.DenshaShogi || {};
     ];
   };
 
+  /**
+   * 指定サイドの駒のうち、相手に取られうるものの ID を返す（1手先のみ）。
+   * @param {Piece[]} pieces
+   * @param {Side} side
+   * @returns {string[]}
+   */
+  ns.threatenedPieceIds = function(pieces, side) {
+    var opponentSide = side === 'red' ? 'blue' : 'red';
+    var threatened = [];
+
+    for (var i = 0; i < pieces.length; i++) {
+      var p = pieces[i];
+      if (p.captured || p.side !== opponentSide) continue;
+
+      var moves = ns.movablePositions(pieces, p);
+      for (var j = 0; j < moves.length; j++) {
+        var target = ns.pieceAt(pieces, moves[j].row, moves[j].col);
+        if (target && target.side === side && threatened.indexOf(target.id) === -1) {
+          threatened.push(target.id);
+        }
+      }
+    }
+
+    return threatened;
+  };
+
 })(window.DenshaShogi);

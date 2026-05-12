@@ -45,8 +45,18 @@ window.DenshaShogi = window.DenshaShogi || {};
 
   /**
    * @param {Object} state
+   * @param {Object} [opts]
+   * @param {string|null} [opts.peekedPieceId]
+   * @param {string[]} [opts.threatenedIds]
+   * @param {boolean} [opts.hintsEnabled]
    */
-  ns.renderBoard = function(state) {
+  ns.renderBoard = function(state, opts) {
+    opts = opts || {};
+    var peekedPieceId = opts.peekedPieceId || null;
+    var threatenedIds = opts.threatenedIds || [];
+    var hintsEnabled = opts.hintsEnabled !== false;
+    var isPeeking = !!peekedPieceId;
+
     var cells = boardEl.querySelectorAll('.cell');
     var selectedPiece = null;
     if (state.selectedPieceId) {
@@ -57,12 +67,21 @@ window.DenshaShogi = window.DenshaShogi || {};
 
     var moves = selectedPiece ? ns.movablePositions(state.pieces, selectedPiece) : [];
 
+    var peekedPiece = null;
+    var peekMoves = [];
+    if (peekedPieceId) {
+      for (var pi = 0; pi < state.pieces.length; pi++) {
+        if (state.pieces[pi].id === peekedPieceId) { peekedPiece = state.pieces[pi]; break; }
+      }
+      peekMoves = peekedPiece ? ns.movablePositions(state.pieces, peekedPiece) : [];
+    }
+
     for (var ci = 0; ci < cells.length; ci++) {
       var cell = cells[ci];
       var row = Number(cell.dataset.row);
       var col = Number(cell.dataset.col);
 
-      cell.classList.remove('selected', 'movable', 'capturable');
+      cell.classList.remove('selected', 'movable', 'capturable', 'peeked', 'peek-movable');
 
       var existingPiece = cell.querySelector('.piece');
       if (existingPiece) existingPiece.remove();
@@ -71,10 +90,22 @@ window.DenshaShogi = window.DenshaShogi || {};
 
       if (piece) {
         var pieceEl = createPieceElement(piece);
+
+        if (hintsEnabled && threatenedIds.indexOf(piece.id) !== -1) {
+          var badge = document.createElement('div');
+          badge.classList.add('danger-badge');
+          if (isPeeking) badge.classList.add('danger-dimmed');
+          badge.textContent = '！';
+          pieceEl.appendChild(badge);
+        }
+
         cell.appendChild(pieceEl);
 
         if (selectedPiece && piece.id === selectedPiece.id) {
           cell.classList.add('selected');
+        }
+        if (peekedPiece && piece.id === peekedPieceId) {
+          cell.classList.add('peeked');
         }
       }
 
@@ -89,6 +120,14 @@ window.DenshaShogi = window.DenshaShogi || {};
         } else {
           cell.classList.add('movable');
         }
+      }
+
+      var isPeekMove = false;
+      for (var pmi = 0; pmi < peekMoves.length; pmi++) {
+        if (peekMoves[pmi].row === row && peekMoves[pmi].col === col) { isPeekMove = true; break; }
+      }
+      if (isPeekMove) {
+        cell.classList.add('peek-movable');
       }
     }
   };
