@@ -31,25 +31,25 @@ window.DenshaShogi = window.DenshaShogi || {};
       name: 'ふつう',
       promotedName: 'かいそく',
       symbol: '◯',
-      image: { red: 'assets/images/red-futsuu.svg', blue: 'assets/images/blue-futsuu.svg' },
+      image: { red: 'assets/images/red-futsuu.png', blue: 'assets/images/blue-futsuu.png' },
     },
     tokkyuu: {
       name: 'とっきゅう',
       promotedName: 'スーパーとっきゅう',
       symbol: '△',
-      image: { red: 'assets/images/red-tokkyuu.svg', blue: 'assets/images/blue-tokkyuu.svg' },
+      image: { red: 'assets/images/red-tokkyuu.png', blue: 'assets/images/blue-tokkyuu.png' },
     },
     kamotsu: {
       name: 'かもつ',
       promotedName: 'スーパーかもつ',
       symbol: '□',
-      image: { red: 'assets/images/red-kamotsu.svg', blue: 'assets/images/blue-kamotsu.svg' },
+      image: { red: 'assets/images/red-kamotsu.png', blue: 'assets/images/blue-kamotsu.png' },
     },
     shinkansen: {
       name: 'しんかんせん',
       promotedName: 'スーパーしんかんせん',
       symbol: '☆',
-      image: { red: 'assets/images/red-shinkansen.svg', blue: 'assets/images/blue-shinkansen.svg' },
+      image: { red: 'assets/images/red-shinkansen.png', blue: 'assets/images/blue-shinkansen.png' },
     },
   };
 
