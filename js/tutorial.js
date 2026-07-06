@@ -40,7 +40,7 @@ window.DenshaShogi = window.DenshaShogi || {};
     var info = ns.PIECE_TYPES[p.type];
     var name = p.promoted ? info.promotedName : info.name;
     var img = document.createElement('img');
-    img.src = info.image[p.side];
+    img.src = ns.pieceImage(p);
     img.alt = name;
     img.classList.add('piece-img');
     img.draggable = false;

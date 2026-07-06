@@ -221,7 +221,7 @@ window.DenshaShogi = window.DenshaShogi || {};
     var displayName = piece.promoted ? typeInfo.promotedName : typeInfo.name;
 
     var img = document.createElement('img');
-    img.src = typeInfo.image[piece.side];
+    img.src = ns.pieceImage(piece);
     img.alt = displayName;
     img.classList.add('piece-img');
     img.draggable = false;

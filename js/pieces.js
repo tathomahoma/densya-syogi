@@ -32,12 +32,14 @@ window.DenshaShogi = window.DenshaShogi || {};
       promotedName: 'かいそく',
       symbol: '◯',
       image: { red: 'assets/images/red-futsuu.png', blue: 'assets/images/blue-futsuu.png' },
+      promotedImage: { red: 'assets/images/red-futsuu-promoted.png', blue: 'assets/images/blue-futsuu-promoted.png' },
     },
     tokkyuu: {
       name: 'とっきゅう',
       promotedName: 'スーパーとっきゅう',
       symbol: '△',
       image: { red: 'assets/images/red-tokkyuu.png', blue: 'assets/images/blue-tokkyuu.png' },
+      promotedImage: { red: 'assets/images/red-tokkyuu-promoted.png', blue: 'assets/images/blue-tokkyuu-promoted.png' },
     },
     kamotsu: {
       name: 'かもつ',
@@ -50,7 +52,21 @@ window.DenshaShogi = window.DenshaShogi || {};
       promotedName: 'スーパーしんかんせん',
       symbol: '☆',
       image: { red: 'assets/images/red-shinkansen.png', blue: 'assets/images/blue-shinkansen.png' },
+      promotedImage: { red: 'assets/images/red-shinkansen-promoted.png', blue: 'assets/images/blue-shinkansen-promoted.png' },
     },
+  };
+
+  /**
+   * 駒の表示に使う画像パスを返す。成り駒は成り後の画像（未定義の駒種は通常画像）。
+   * @param {Piece} piece
+   * @returns {string}
+   */
+  ns.pieceImage = function(piece) {
+    var typeInfo = ns.PIECE_TYPES[piece.type];
+    if (piece.promoted && typeInfo.promotedImage) {
+      return typeInfo.promotedImage[piece.side];
+    }
+    return typeInfo.image[piece.side];
   };
 
   /**
