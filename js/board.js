@@ -2,46 +2,45 @@
 
 window.DenshaShogi = window.DenshaShogi || {};
 
-(function(ns) {
+((ns) => {
   'use strict';
 
-  var boardEl;
-  var onCellTap;
-  var animating = false;
+  let boardEl;
+  let onCellTap;
+  let animating = false;
 
   /**
    * @param {HTMLElement} el
    * @param {function(number, number): void} tapHandler
    */
-  ns.initBoard = function(el, tapHandler) {
+  ns.initBoard = (el, tapHandler) => {
     boardEl = el;
     onCellTap = tapHandler;
 
     boardEl.innerHTML = '';
 
-    for (var row = ns.ROWS; row >= 1; row--) {
-      for (var col = 1; col <= ns.COLS; col++) {
-        var cell = document.createElement('div');
+    for (let row = ns.ROWS; row >= 1; row--) {
+      for (let col = 1; col <= ns.COLS; col++) {
+        const cell = document.createElement('div');
         cell.classList.add('cell');
         cell.classList.add((row + col) % 2 === 0 ? 'cell-light' : 'cell-dark');
         cell.dataset.row = String(row);
         cell.dataset.col = String(col);
         cell.setAttribute('role', 'gridcell');
-
-        (function(r, c) {
-          cell.addEventListener('click', function() {
-            if (!animating) onCellTap(r, c);
-          });
-        })(row, col);
-
         boardEl.appendChild(cell);
       }
     }
+
+    // セル個別ではなく盤全体で1つのリスナーに委譲する
+    boardEl.addEventListener('click', (e) => {
+      const cell = e.target.closest('.cell');
+      if (!cell || animating) return;
+      onCellTap(Number(cell.dataset.row), Number(cell.dataset.col));
+    });
   };
 
-  function getCell(row, col) {
-    return boardEl.querySelector('[data-row="' + row + '"][data-col="' + col + '"]');
-  }
+  const getCell = (row, col) =>
+    boardEl.querySelector(`[data-row="${row}"][data-col="${col}"]`);
 
   /**
    * @param {Object} state
@@ -50,49 +49,49 @@ window.DenshaShogi = window.DenshaShogi || {};
    * @param {string[]} [opts.threatenedIds]
    * @param {boolean} [opts.hintsEnabled]
    */
-  ns.renderBoard = function(state, opts) {
+  ns.renderBoard = (state, opts) => {
     opts = opts || {};
-    var peekedPieceId = opts.peekedPieceId || null;
-    var threatenedIds = opts.threatenedIds || [];
-    var hintsEnabled = opts.hintsEnabled !== false;
-    var isPeeking = !!peekedPieceId;
+    const peekedPieceId = opts.peekedPieceId || null;
+    const threatenedIds = opts.threatenedIds || [];
+    const hintsEnabled = opts.hintsEnabled !== false;
+    const isPeeking = !!peekedPieceId;
 
-    var cells = boardEl.querySelectorAll('.cell');
-    var selectedPiece = null;
-    if (state.selectedPieceId) {
-      for (var i = 0; i < state.pieces.length; i++) {
-        if (state.pieces[i].id === state.selectedPieceId) { selectedPiece = state.pieces[i]; break; }
-      }
+    const selectedPiece = ns.findPieceById(state.pieces, state.selectedPieceId);
+    const peekedPiece = ns.findPieceById(state.pieces, peekedPieceId);
+
+    // 位置キー（'row,col'）でまとめて引けるようにし、セル毎の線形探索をなくす
+    const pieceMap = {};
+    for (const p of state.pieces) {
+      if (!p.captured) pieceMap[`${p.pos.row},${p.pos.col}`] = p;
     }
 
-    var moves = selectedPiece ? ns.movablePositions(state.pieces, selectedPiece) : [];
-
-    var peekedPiece = null;
-    var peekMoves = [];
-    if (peekedPieceId) {
-      for (var pi = 0; pi < state.pieces.length; pi++) {
-        if (state.pieces[pi].id === peekedPieceId) { peekedPiece = state.pieces[pi]; break; }
+    const toKeySet = (positions) => {
+      const set = {};
+      for (const pos of positions) {
+        set[`${pos.row},${pos.col}`] = true;
       }
-      peekMoves = peekedPiece ? ns.movablePositions(state.pieces, peekedPiece) : [];
-    }
+      return set;
+    };
 
-    for (var ci = 0; ci < cells.length; ci++) {
-      var cell = cells[ci];
-      var row = Number(cell.dataset.row);
-      var col = Number(cell.dataset.col);
+    const moveSet = toKeySet(selectedPiece ? ns.movablePositions(state.pieces, selectedPiece) : []);
+    const peekMoveSet = toKeySet(peekedPiece ? ns.movablePositions(state.pieces, peekedPiece) : []);
+
+    const cells = boardEl.querySelectorAll('.cell');
+    for (const cell of cells) {
+      const key = `${cell.dataset.row},${cell.dataset.col}`;
 
       cell.classList.remove('selected', 'movable', 'capturable', 'peeked', 'peek-movable');
 
-      var existingPiece = cell.querySelector('.piece');
+      const existingPiece = cell.querySelector('.piece');
       if (existingPiece) existingPiece.remove();
 
-      var piece = ns.pieceAt(state.pieces, row, col);
+      const piece = pieceMap[key] || null;
 
       if (piece) {
-        var pieceEl = createPieceElement(piece);
+        const pieceEl = ns.createPieceElement(piece);
 
-        if (hintsEnabled && threatenedIds.indexOf(piece.id) !== -1) {
-          var badge = document.createElement('div');
+        if (hintsEnabled && threatenedIds.includes(piece.id)) {
+          const badge = document.createElement('div');
           badge.classList.add('danger-badge');
           if (isPeeking) badge.classList.add('danger-dimmed');
           badge.textContent = '！';
@@ -109,24 +108,15 @@ window.DenshaShogi = window.DenshaShogi || {};
         }
       }
 
-      var isMove = false;
-      for (var mi = 0; mi < moves.length; mi++) {
-        if (moves[mi].row === row && moves[mi].col === col) { isMove = true; break; }
-      }
-      if (isMove) {
-        var occupant = ns.pieceAt(state.pieces, row, col);
-        if (occupant && occupant.side !== selectedPiece.side) {
+      if (moveSet[key]) {
+        if (piece && piece.side !== selectedPiece.side) {
           cell.classList.add('capturable');
         } else {
           cell.classList.add('movable');
         }
       }
 
-      var isPeekMove = false;
-      for (var pmi = 0; pmi < peekMoves.length; pmi++) {
-        if (peekMoves[pmi].row === row && peekMoves[pmi].col === col) { isPeekMove = true; break; }
-      }
-      if (isPeekMove) {
+      if (peekMoveSet[key]) {
         cell.classList.add('peek-movable');
       }
     }
@@ -139,24 +129,24 @@ window.DenshaShogi = window.DenshaShogi || {};
    * @param {number} toCol
    * @returns {Promise<void>}
    */
-  ns.animateMove = function(fromRow, fromCol, toRow, toCol) {
-    return new Promise(function(resolve) {
+  ns.animateMove = (fromRow, fromCol, toRow, toCol) => {
+    return new Promise((resolve) => {
       animating = true;
 
-      var fromCell = getCell(fromRow, fromCol);
-      var toCell = getCell(toRow, toCol);
+      const fromCell = getCell(fromRow, fromCol);
+      const toCell = getCell(toRow, toCol);
       if (!fromCell || !toCell) {
         animating = false;
         resolve();
         return;
       }
 
-      var fromRect = fromCell.getBoundingClientRect();
-      var toRect = toCell.getBoundingClientRect();
-      var dx = toRect.left - fromRect.left;
-      var dy = toRect.top - fromRect.top;
+      const fromRect = fromCell.getBoundingClientRect();
+      const toRect = toCell.getBoundingClientRect();
+      const dx = toRect.left - fromRect.left;
+      const dy = toRect.top - fromRect.top;
 
-      var pieceEl = fromCell.querySelector('.piece');
+      const pieceEl = fromCell.querySelector('.piece');
       if (!pieceEl) {
         animating = false;
         resolve();
@@ -169,12 +159,12 @@ window.DenshaShogi = window.DenshaShogi || {};
       pieceEl.style.left = '0px';
       pieceEl.style.top = '0px';
 
-      requestAnimationFrame(function() {
-        pieceEl.style.left = dx + 'px';
-        pieceEl.style.top = dy + 'px';
+      requestAnimationFrame(() => {
+        pieceEl.style.left = `${dx}px`;
+        pieceEl.style.top = `${dy}px`;
       });
 
-      setTimeout(function() {
+      setTimeout(() => {
         animating = false;
         resolve();
       }, 260);
@@ -185,42 +175,45 @@ window.DenshaShogi = window.DenshaShogi || {};
    * @param {number} row
    * @param {number} col
    */
-  ns.playCaptureEffect = function(row, col) {
-    var cell = getCell(row, col);
+  ns.playCaptureEffect = (row, col) => {
+    const cell = getCell(row, col);
     if (!cell) return;
 
-    var rect = cell.getBoundingClientRect();
-    var boardRect = boardEl.getBoundingClientRect();
-    var cx = rect.left - boardRect.left + rect.width / 2;
-    var cy = rect.top - boardRect.top + rect.height / 2;
+    const rect = cell.getBoundingClientRect();
+    const boardRect = boardEl.getBoundingClientRect();
+    const cx = rect.left - boardRect.left + rect.width / 2;
+    const cy = rect.top - boardRect.top + rect.height / 2;
 
-    for (var i = 0; i < 8; i++) {
-      var particle = document.createElement('div');
+    for (let i = 0; i < 8; i++) {
+      const particle = document.createElement('div');
       particle.classList.add('particle');
-      var angle = (Math.PI * 2 * i) / 8;
-      var dist = 30 + Math.random() * 20;
-      particle.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
-      particle.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
-      particle.style.left = cx + 'px';
-      particle.style.top = cy + 'px';
+      const angle = (Math.PI * 2 * i) / 8;
+      const dist = 30 + Math.random() * 20;
+      particle.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
+      particle.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
+      particle.style.left = `${cx}px`;
+      particle.style.top = `${cy}px`;
       boardEl.appendChild(particle);
-      (function(p) {
-        setTimeout(function() { p.remove(); }, 500);
-      })(particle);
+      setTimeout(() => particle.remove(), 500);
     }
   };
 
-  function createPieceElement(piece) {
-    var el = document.createElement('div');
-    el.classList.add('piece', 'piece-' + piece.side);
+  /**
+   * 駒の DOM 要素を生成する。チュートリアルの盤描画からも共用する。
+   * @param {Piece} piece
+   * @returns {HTMLElement}
+   */
+  ns.createPieceElement = (piece) => {
+    const el = document.createElement('div');
+    el.classList.add('piece', `piece-${piece.side}`);
     if (piece.promoted) {
       el.classList.add('piece-promoted');
     }
 
-    var typeInfo = ns.PIECE_TYPES[piece.type];
-    var displayName = piece.promoted ? typeInfo.promotedName : typeInfo.name;
+    const typeInfo = ns.PIECE_TYPES[piece.type];
+    const displayName = piece.promoted ? typeInfo.promotedName : typeInfo.name;
 
-    var img = document.createElement('img');
+    const img = document.createElement('img');
     img.src = ns.pieceImage(piece);
     img.alt = displayName;
     img.classList.add('piece-img');
@@ -228,15 +221,15 @@ window.DenshaShogi = window.DenshaShogi || {};
     el.appendChild(img);
 
     if (piece.promoted) {
-      var badge = document.createElement('div');
+      const badge = document.createElement('div');
       badge.classList.add('promoted-badge');
       badge.textContent = '★';
       el.appendChild(badge);
     }
 
-    el.setAttribute('aria-label', (piece.side === 'red' ? 'あか' : 'あお') + 'の' + displayName);
+    el.setAttribute('aria-label', `${piece.side === 'red' ? 'あか' : 'あお'}の${displayName}`);
 
     return el;
-  }
+  };
 
 })(window.DenshaShogi);

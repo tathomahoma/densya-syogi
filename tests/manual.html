@@ -169,84 +169,84 @@
   <script src="../js/pieces.js"></script>
   <script src="../js/game.js"></script>
   <script>
-    (function() {
+    (() => {
       'use strict';
 
-      var ns = window.DenshaShogi;
-      var resultsEl = document.getElementById('results');
+      const ns = window.DenshaShogi;
+      const resultsEl = document.getElementById('results');
 
-      function assert(name, condition) {
-        var div = document.createElement('div');
+      const assert = (name, condition) => {
+        const div = document.createElement('div');
         div.classList.add('result', condition ? 'pass' : 'fail');
-        div.textContent = (condition ? '✓' : '✗') + ' ' + name;
+        div.textContent = `${condition ? '✓' : '✗'} ${name}`;
         resultsEl.appendChild(div);
-      }
+      };
 
-      document.getElementById('run-tests').addEventListener('click', function() {
+      document.getElementById('run-tests').addEventListener('click', () => {
         resultsEl.innerHTML = '';
 
-        var pieces = ns.createInitialPieces();
+        const pieces = ns.createInitialPieces();
         assert('初期配置: 全10個の駒がある', pieces.length === 10);
-        assert('初期配置: あか5個', pieces.filter(function(p) { return p.side === 'red'; }).length === 5);
-        assert('初期配置: あお5個', pieces.filter(function(p) { return p.side === 'blue'; }).length === 5);
-        assert('初期配置: しんかんせん各1個', pieces.filter(function(p) { return p.type === 'shinkansen'; }).length === 2);
-        assert('初期配置: ふつう各2個', pieces.filter(function(p) { return p.type === 'futsuu'; }).length === 4);
+        assert('初期配置: あか5個', pieces.filter((p) => p.side === 'red').length === 5);
+        assert('初期配置: あお5個', pieces.filter((p) => p.side === 'blue').length === 5);
+        assert('初期配置: しんかんせん各1個', pieces.filter((p) => p.type === 'shinkansen').length === 2);
+        assert('初期配置: ふつう各2個', pieces.filter((p) => p.type === 'futsuu').length === 4);
 
-        var redShinkansen = pieces.find(function(p) { return p.side === 'red' && p.type === 'shinkansen'; });
+        const redShinkansen = pieces.find((p) => p.side === 'red' && p.type === 'shinkansen');
         assert('あかのしんかんせんは row=1, col=4', redShinkansen.pos.row === 1 && redShinkansen.pos.col === 4);
 
-        var blueShinkansen = pieces.find(function(p) { return p.side === 'blue' && p.type === 'shinkansen'; });
+        const blueShinkansen = pieces.find((p) => p.side === 'blue' && p.type === 'shinkansen');
         assert('あおのしんかんせんは row=6, col=4', blueShinkansen.pos.row === 6 && blueShinkansen.pos.col === 4);
 
-        var redFutsuu = pieces.find(function(p) { return p.side === 'red' && p.type === 'futsuu' && p.pos.col === 3; });
-        var futsuuMoves = ns.movablePositions(pieces, redFutsuu);
+        const redFutsuu = pieces.find((p) => p.side === 'red' && p.type === 'futsuu' && p.pos.col === 3);
+        const futsuuMoves = ns.movablePositions(pieces, redFutsuu);
         assert('ふつうでんしゃは前に1マス動ける', futsuuMoves.length === 1);
         assert('ふつうでんしゃの移動先は row+1', futsuuMoves[0].row === redFutsuu.pos.row + 1);
 
-        var redTokkyuu = pieces.find(function(p) { return p.side === 'red' && p.type === 'tokkyuu'; });
-        var tokkyuuMoves = ns.movablePositions(pieces, redTokkyuu);
+        const redTokkyuu = pieces.find((p) => p.side === 'red' && p.type === 'tokkyuu');
+        const tokkyuuMoves = ns.movablePositions(pieces, redTokkyuu);
         assert('とっきゅうは前後左右に動ける（初期位置(1,2)では3方向）', tokkyuuMoves.length === 3);
 
-        var redKamotsu = pieces.find(function(p) { return p.side === 'red' && p.type === 'kamotsu'; });
-        var kamotsuMoves = ns.movablePositions(pieces, redKamotsu);
+        const redKamotsu = pieces.find((p) => p.side === 'red' && p.type === 'kamotsu');
+        const kamotsuMoves = ns.movablePositions(pieces, redKamotsu);
         assert('かもつは初期位置(1,6)では1方向（斜め(2,7)のみ）', kamotsuMoves.length === 1);
 
-        var testKamotsu = { id: 'test-kamotsu', side: 'red', type: 'kamotsu', pos: { row: 3, col: 3 }, captured: false };
-        var kamotsuCenterMoves = ns.movablePositions([testKamotsu], testKamotsu);
+        const testKamotsu = { id: 'test-kamotsu', side: 'red', type: 'kamotsu', pos: { row: 3, col: 3 }, captured: false };
+        const kamotsuCenterMoves = ns.movablePositions([testKamotsu], testKamotsu);
         assert('かもつが中央なら斜め4方向に動ける', kamotsuCenterMoves.length === 4);
 
-        var shinkansenMoves = ns.movablePositions(pieces, redShinkansen);
+        const shinkansenMoves = ns.movablePositions(pieces, redShinkansen);
         assert('しんかんせんは全方向に動ける（初期位置では3方向）', shinkansenMoves.length === 3);
 
-        var state = ns.createGameState();
+        let state = ns.createGameState();
         assert('初期状態は title', state.phase === 'title');
 
-        state = ns.startGame(state);
+        state = ns.startGame();
         assert('ゲーム開始後は red_turn', state.phase === 'red_turn');
         assert('先手はあか', ns.currentSide(state) === 'red');
 
-        var redPiece = state.pieces.find(function(p) { return p.side === 'red' && p.type === 'futsuu' && p.pos.col === 3; });
+        const redPiece = state.pieces.find((p) => p.side === 'red' && p.type === 'futsuu' && p.pos.col === 3);
         state = ns.selectPiece(state, redPiece.id);
         assert('駒を選択できる', state.selectedPieceId === redPiece.id);
 
-        var moveResult = ns.movePiece(state, 3, 3);
+        const moveResult = ns.movePiece(state, 3, 3);
         assert('ふつうが前に移動できる', moveResult.moved === true);
         assert('移動後は blue_turn', moveResult.state.phase === 'blue_turn');
 
-        var redPiece2 = moveResult.state.pieces.find(function(p) { return p.side === 'red' && p.type === 'tokkyuu'; });
-        var badSelect = ns.selectPiece(moveResult.state, redPiece2.id);
+        const redPiece2 = moveResult.state.pieces.find((p) => p.side === 'red' && p.type === 'tokkyuu');
+        const badSelect = ns.selectPiece(moveResult.state, redPiece2.id);
         assert('相手の手番では選択できない', badSelect.selectedPieceId === null);
 
-        var undoState = ns.undoMove(moveResult.state);
+        const undoState = ns.undoMove(moveResult.state);
         assert('もどすで red_turn に戻る', undoState.phase === 'red_turn');
         assert('もどす回数が1増える', undoState.undoCount.blue === 1);
 
-        var cornerPiece = pieces.find(function(p) { return p.side === 'red' && p.type === 'tokkyuu'; });
-        var cornerMoves = ns.movablePositions(pieces, cornerPiece);
-        assert('隅の駒は盤外に動けない', cornerMoves.every(function(m) { return m.row >= 1 && m.row <= ns.ROWS && m.col >= 1 && m.col <= ns.COLS; }));
+        const cornerPiece = pieces.find((p) => p.side === 'red' && p.type === 'tokkyuu');
+        const cornerMoves = ns.movablePositions(pieces, cornerPiece);
+        assert('隅の駒は盤外に動けない', cornerMoves.every((m) => m.row >= 1 && m.row <= ns.ROWS && m.col >= 1 && m.col <= ns.COLS));
 
-        var blocked = cornerMoves.every(function(m) {
-          var occ = ns.pieceAt(pieces, m.row, m.col);
+        const blocked = cornerMoves.every((m) => {
+          const occ = ns.pieceAt(pieces, m.row, m.col);
           return !occ || occ.side !== cornerPiece.side;
         });
         assert('自分の駒がいるマスには動けない', blocked);
@@ -254,58 +254,62 @@
         // --- 成りテスト ---
 
         // ふつうが成ったら前後左右に動ける
-        var promotedFutsuu = { id: 'test-pf', side: 'red', type: 'futsuu', pos: { row: 4, col: 4 }, captured: false, promoted: true };
-        var pfMoves = ns.movablePositions([promotedFutsuu], promotedFutsuu);
+        const promotedFutsuu = { id: 'test-pf', side: 'red', type: 'futsuu', pos: { row: 4, col: 4 }, captured: false, promoted: true };
+        const pfMoves = ns.movablePositions([promotedFutsuu], promotedFutsuu);
         assert('成りふつう（かいそく）は前後左右4方向に動ける', pfMoves.length === 4);
 
         // とっきゅうが成ったら銀将の動き（前1＋斜め4）
-        var promotedTokkyuu = { id: 'test-pt', side: 'red', type: 'tokkyuu', pos: { row: 3, col: 4 }, captured: false, promoted: true };
-        var ptMoves = ns.movablePositions([promotedTokkyuu], promotedTokkyuu);
+        const promotedTokkyuu = { id: 'test-pt', side: 'red', type: 'tokkyuu', pos: { row: 3, col: 4 }, captured: false, promoted: true };
+        const ptMoves = ns.movablePositions([promotedTokkyuu], promotedTokkyuu);
         assert('成りとっきゅうは5方向に動ける（銀将）', ptMoves.length === 5);
 
         // かもつが成ったら金将の動き（前後左右＋前斜め）
-        var promotedKamotsu = { id: 'test-pk', side: 'red', type: 'kamotsu', pos: { row: 3, col: 4 }, captured: false, promoted: true };
-        var pkMoves = ns.movablePositions([promotedKamotsu], promotedKamotsu);
+        const promotedKamotsu = { id: 'test-pk', side: 'red', type: 'kamotsu', pos: { row: 3, col: 4 }, captured: false, promoted: true };
+        const pkMoves = ns.movablePositions([promotedKamotsu], promotedKamotsu);
         assert('成りかもつは6方向に動ける（金将）', pkMoves.length === 6);
 
         // しんかんせんが成ったら全方位2マス
-        var promotedShinkansen = { id: 'test-ps', side: 'red', type: 'shinkansen', pos: { row: 3, col: 4 }, captured: false, promoted: true };
-        var psMoves = ns.movablePositions([promotedShinkansen], promotedShinkansen);
+        const promotedShinkansen = { id: 'test-ps', side: 'red', type: 'shinkansen', pos: { row: 3, col: 4 }, captured: false, promoted: true };
+        const psMoves = ns.movablePositions([promotedShinkansen], promotedShinkansen);
         assert('成りしんかんせんは全方位2マス（最大16マス、盤内に収まる分）', psMoves.length === 16);
 
         // しんかんせんが成った時、途中に駒がいたら飛び越えられない
-        var blocker = { id: 'test-blocker', side: 'red', type: 'futsuu', pos: { row: 4, col: 4 }, captured: false, promoted: false };
-        var psBlockedMoves = ns.movablePositions([promotedShinkansen, blocker], promotedShinkansen);
+        const blocker = { id: 'test-blocker', side: 'red', type: 'futsuu', pos: { row: 4, col: 4 }, captured: false, promoted: false };
+        const psBlockedMoves = ns.movablePositions([promotedShinkansen, blocker], promotedShinkansen);
         assert('成りしんかんせんは味方駒を飛び越えられない', psBlockedMoves.length === 14);
 
         // 成り判定テスト: あかがrow5に移動したら成る
-        var promState = ns.startGame({ phase: 'title' });
-        var testPiece = { id: 'test-nari', side: 'red', type: 'futsuu', pos: { row: 4, col: 4 }, captured: false, promoted: false };
+        let promState = ns.startGame();
+        const testPiece = { id: 'test-nari', side: 'red', type: 'futsuu', pos: { row: 4, col: 4 }, captured: false, promoted: false };
         promState = Object.assign({}, promState, {
           pieces: [testPiece, { id: 'bs', side: 'blue', type: 'shinkansen', pos: { row: 6, col: 4 }, captured: false, promoted: false }],
           selectedPieceId: 'test-nari',
         });
-        var promResult = ns.movePiece(promState, 5, 4);
+        const promResult = ns.movePiece(promState, 5, 4);
         assert('あかの駒がrow5に入ると成る', promResult.promoted === true);
-        var movedPiece = promResult.state.pieces.find(function(p) { return p.id === 'test-nari'; });
+        const movedPiece = promResult.state.pieces.find((p) => p.id === 'test-nari');
         assert('成った駒のpromotedフラグがtrue', movedPiece.promoted === true);
 
+        // 成り駒は成り後の画像パスを返す（かもつは専用画像なし＝通常画像）
+        assert('成りふつうは成り画像を返す', ns.pieceImage(promotedFutsuu).indexOf('futsuu-promoted') !== -1);
+        assert('成りかもつは通常画像を返す', ns.pieceImage(promotedKamotsu).indexOf('promoted') === -1);
+
         // --- §5.8 きけんマーク計算テスト ---
-        var threatPieces = [
+        const threatPieces = [
           { id: 'r-f', side: 'red', type: 'futsuu', pos: { row: 3, col: 4 }, captured: false, promoted: false },
           { id: 'b-s', side: 'blue', type: 'shinkansen', pos: { row: 4, col: 4 }, captured: false, promoted: false },
         ];
-        var threatened = ns.threatenedPieceIds(threatPieces, 'blue');
+        const threatened = ns.threatenedPieceIds(threatPieces, 'blue');
         assert('あおのしんかんせんがあかのふつうに狙われている', threatened.indexOf('b-s') !== -1);
 
-        var threatened2 = ns.threatenedPieceIds(threatPieces, 'red');
+        const threatened2 = ns.threatenedPieceIds(threatPieces, 'red');
         assert('あかのふつうがあおのしんかんせんに狙われている', threatened2.indexOf('r-f') !== -1);
 
-        var safePieces = [
+        const safePieces = [
           { id: 'r-f', side: 'red', type: 'futsuu', pos: { row: 1, col: 4 }, captured: false, promoted: false },
           { id: 'b-s', side: 'blue', type: 'shinkansen', pos: { row: 6, col: 4 }, captured: false, promoted: false },
         ];
-        var safeThreat = ns.threatenedPieceIds(safePieces, 'red');
+        const safeThreat = ns.threatenedPieceIds(safePieces, 'red');
         assert('離れた駒はきけん判定されない', safeThreat.length === 0);
       });
     })();

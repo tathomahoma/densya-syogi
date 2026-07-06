@@ -1,27 +1,20 @@
 // エントリポイント。DOMContentLoaded で起動。
 
-(function() {
+(() => {
   'use strict';
 
-  var ns = window.DenshaShogi;
-  var state;
-  var processing = false;
-  var peekedPieceId = null;
+  const ns = window.DenshaShogi;
+  let state;
+  let processing = false;
+  let peekedPieceId = null;
 
-  function findPieceById(id) {
-    for (var i = 0; i < state.pieces.length; i++) {
-      if (state.pieces[i].id === id) return state.pieces[i];
-    }
-    return null;
-  }
-
-  function render() {
-    var side = ns.currentSide(state);
-    var threatenedIds = side ? ns.threatenedPieceIds(state.pieces, side) : [];
+  const render = () => {
+    const side = ns.currentSide(state);
+    const threatenedIds = side ? ns.threatenedPieceIds(state.pieces, side) : [];
 
     ns.renderBoard(state, {
-      peekedPieceId: peekedPieceId,
-      threatenedIds: threatenedIds,
+      peekedPieceId,
+      threatenedIds,
       hintsEnabled: ns.getHintsEnabled(),
     });
 
@@ -31,15 +24,15 @@
     }
 
     ns.updateDepots(state.pieces);
-  }
+  };
 
-  function handleCellTap(row, col) {
+  const handleCellTap = (row, col) => {
     if (processing) return;
 
-    var side = ns.currentSide(state);
+    const side = ns.currentSide(state);
     if (!side) return;
 
-    var tappedPiece = ns.pieceAt(state.pieces, row, col);
+    const tappedPiece = ns.pieceAt(state.pieces, row, col);
 
     // === 自分の駒が選択中 ===
     if (state.selectedPieceId) {
@@ -51,17 +44,17 @@
         return;
       }
 
-      var selectedPiece = findPieceById(state.selectedPieceId);
-      var fromRow = selectedPiece.pos.row;
-      var fromCol = selectedPiece.pos.col;
+      const selectedPiece = ns.findPieceById(state.pieces, state.selectedPieceId);
+      const fromRow = selectedPiece.pos.row;
+      const fromCol = selectedPiece.pos.col;
 
-      var result = ns.movePiece(state, row, col);
+      const result = ns.movePiece(state, row, col);
       if (result.moved) {
         processing = true;
         peekedPieceId = null;
         ns.playMoveSound(selectedPiece.type);
 
-        ns.animateMove(fromRow, fromCol, row, col).then(function() {
+        ns.animateMove(fromRow, fromCol, row, col).then(() => {
           state = result.state;
 
           if (result.captured) {
@@ -77,11 +70,11 @@
 
           if (state.phase === 'win') {
             ns.stopBgm();
-            setTimeout(function() {
+            setTimeout(() => {
               ns.playWinSound();
               ns.playConfetti();
               ns.showWinScreen(state.winner);
-              setTimeout(function() {
+              setTimeout(() => {
                 ns.playLoseSound();
               }, 1500);
             }, 300);
@@ -117,7 +110,7 @@
 
     // === 何も選択していない ===
     if (tappedPiece && tappedPiece.side === side) {
-      var moves = ns.movablePositions(state.pieces, tappedPiece);
+      const moves = ns.movablePositions(state.pieces, tappedPiece);
       if (moves.length > 0) {
         state = ns.selectPiece(state, tappedPiece.id);
         ns.playSelectSound();
@@ -126,21 +119,28 @@
       peekedPieceId = tappedPiece.id;
     }
     render();
-  }
+  };
 
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', () => {
     state = ns.createGameState();
 
-    function beginGame() {
+    const beginGame = () => {
       peekedPieceId = null;
-      state = ns.startGame(state);
+      state = ns.startGame();
       ns.showScreen('game-screen');
       ns.updateMuteButton();
       ns.startBgm();
       render();
-    }
+    };
 
-    document.getElementById('start-btn').addEventListener('click', function() {
+    const returnToTitle = () => {
+      ns.stopBgm();
+      peekedPieceId = null;
+      state = ns.createGameState();
+      ns.showScreen('title-screen');
+    };
+
+    document.getElementById('start-btn').addEventListener('click', () => {
       ns.initAudio();
       if (localStorage.getItem('tutorialSeen') !== 'true') {
         ns.startTutorial(beginGame);
@@ -149,47 +149,35 @@
       beginGame();
     });
 
-    document.getElementById('tutorial-btn').addEventListener('click', function() {
+    document.getElementById('tutorial-btn').addEventListener('click', () => {
       ns.initAudio();
-      ns.startTutorial(beginGame, function() {});
+      ns.startTutorial(beginGame, () => {});
     });
 
-    document.getElementById('quit-btn').addEventListener('click', function() {
-      ns.stopBgm();
-      peekedPieceId = null;
-      state = ns.createGameState();
-      ns.showScreen('title-screen');
-    });
+    document.getElementById('quit-btn').addEventListener('click', returnToTitle);
 
-    document.getElementById('undo-btn').addEventListener('click', function() {
+    document.getElementById('undo-btn').addEventListener('click', () => {
       peekedPieceId = null;
       state = ns.undoMove(state);
       render();
     });
 
-    document.getElementById('replay-btn').addEventListener('click', function() {
+    document.getElementById('replay-btn').addEventListener('click', () => {
       ns.stopFanfare();
-      peekedPieceId = null;
-      state = ns.startGame(state);
-      ns.showScreen('game-screen');
-      ns.startBgm();
-      render();
+      beginGame();
     });
 
-    document.getElementById('quit-win-btn').addEventListener('click', function() {
+    document.getElementById('quit-win-btn').addEventListener('click', () => {
       ns.stopFanfare();
-      ns.stopBgm();
-      peekedPieceId = null;
-      state = ns.createGameState();
-      ns.showScreen('title-screen');
+      returnToTitle();
     });
 
-    document.getElementById('mute-btn').addEventListener('click', function() {
+    document.getElementById('mute-btn').addEventListener('click', () => {
       ns.toggleMute();
       ns.updateMuteButton();
     });
 
-    document.getElementById('hints-toggle').addEventListener('click', function() {
+    document.getElementById('hints-toggle').addEventListener('click', () => {
       ns.setHintsEnabled(!ns.getHintsEnabled());
       ns.updateHintsButton();
     });

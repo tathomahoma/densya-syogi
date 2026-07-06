@@ -18,7 +18,7 @@
 
 window.DenshaShogi = window.DenshaShogi || {};
 
-(function(ns) {
+((ns) => {
   'use strict';
 
   ns.ROWS = 6;
@@ -61,8 +61,8 @@ window.DenshaShogi = window.DenshaShogi || {};
    * @param {Piece} piece
    * @returns {string}
    */
-  ns.pieceImage = function(piece) {
-    var typeInfo = ns.PIECE_TYPES[piece.type];
+  ns.pieceImage = (piece) => {
+    const typeInfo = ns.PIECE_TYPES[piece.type];
     if (piece.promoted && typeInfo.promotedImage) {
       return typeInfo.promotedImage[piece.side];
     }
@@ -74,8 +74,8 @@ window.DenshaShogi = window.DenshaShogi || {};
    * @param {Side} side
    * @returns {{dr: number, dc: number}[]}
    */
-  function moveOffsets(type, side, promoted) {
-    var forward = side === 'red' ? 1 : -1;
+  const moveOffsets = (type, side, promoted) => {
+    const forward = side === 'red' ? 1 : -1;
 
     if (!promoted) {
       switch (type) {
@@ -163,7 +163,18 @@ window.DenshaShogi = window.DenshaShogi || {};
       default:
         return [];
     }
-  }
+  };
+
+  /**
+   * ID で駒を探す。
+   * @param {Piece[]} pieces
+   * @param {string|null} id
+   * @returns {Piece|null}
+   */
+  ns.findPieceById = (pieces, id) => {
+    if (!id) return null;
+    return pieces.find((p) => p.id === id) || null;
+  };
 
   /**
    * @param {Piece[]} pieces
@@ -171,12 +182,8 @@ window.DenshaShogi = window.DenshaShogi || {};
    * @param {number} col
    * @returns {Piece|null}
    */
-  ns.pieceAt = function(pieces, row, col) {
-    for (var i = 0; i < pieces.length; i++) {
-      var p = pieces[i];
-      if (!p.captured && p.pos.row === row && p.pos.col === col) return p;
-    }
-    return null;
+  ns.pieceAt = (pieces, row, col) => {
+    return pieces.find((p) => !p.captured && p.pos.row === row && p.pos.col === col) || null;
   };
 
   /**
@@ -184,21 +191,21 @@ window.DenshaShogi = window.DenshaShogi || {};
    * @param {Piece} piece
    * @returns {Position[]}
    */
-  ns.movablePositions = function(pieces, piece) {
+  ns.movablePositions = (pieces, piece) => {
     if (piece.captured) return [];
 
-    var offsets = moveOffsets(piece.type, piece.side, piece.promoted);
-    var result = [];
-    var range = (piece.promoted && piece.type === 'shinkansen') ? 2 : 1;
+    const offsets = moveOffsets(piece.type, piece.side, piece.promoted);
+    const result = [];
+    const range = (piece.promoted && piece.type === 'shinkansen') ? 2 : 1;
 
-    for (var i = 0; i < offsets.length; i++) {
-      for (var step = 1; step <= range; step++) {
-        var newRow = piece.pos.row + offsets[i].dr * step;
-        var newCol = piece.pos.col + offsets[i].dc * step;
+    for (const offset of offsets) {
+      for (let step = 1; step <= range; step++) {
+        const newRow = piece.pos.row + offset.dr * step;
+        const newCol = piece.pos.col + offset.dc * step;
 
         if (newRow < 1 || newRow > ns.ROWS || newCol < 1 || newCol > ns.COLS) break;
 
-        var occupant = ns.pieceAt(pieces, newRow, newCol);
+        const occupant = ns.pieceAt(pieces, newRow, newCol);
         if (occupant && occupant.side === piece.side) break;
 
         result.push({ row: newRow, col: newCol });
@@ -213,18 +220,16 @@ window.DenshaShogi = window.DenshaShogi || {};
   /**
    * @returns {Piece[]}
    */
-  ns.createInitialPieces = function() {
-    var id = 0;
-    function make(side, type, row, col) {
-      return {
-        id: side + '-' + type + '-' + (id++),
-        side: side,
-        type: type,
-        pos: { row: row, col: col },
-        captured: false,
-        promoted: false,
-      };
-    }
+  ns.createInitialPieces = () => {
+    let id = 0;
+    const make = (side, type, row, col) => ({
+      id: `${side}-${type}-${id++}`,
+      side,
+      type,
+      pos: { row, col },
+      captured: false,
+      promoted: false,
+    });
 
     return [
       make('red', 'tokkyuu', 1, 2),
@@ -247,18 +252,17 @@ window.DenshaShogi = window.DenshaShogi || {};
    * @param {Side} side
    * @returns {string[]}
    */
-  ns.threatenedPieceIds = function(pieces, side) {
-    var opponentSide = side === 'red' ? 'blue' : 'red';
-    var threatened = [];
+  ns.threatenedPieceIds = (pieces, side) => {
+    const opponentSide = side === 'red' ? 'blue' : 'red';
+    const threatened = [];
 
-    for (var i = 0; i < pieces.length; i++) {
-      var p = pieces[i];
+    for (const p of pieces) {
       if (p.captured || p.side !== opponentSide) continue;
 
-      var moves = ns.movablePositions(pieces, p);
-      for (var j = 0; j < moves.length; j++) {
-        var target = ns.pieceAt(pieces, moves[j].row, moves[j].col);
-        if (target && target.side === side && threatened.indexOf(target.id) === -1) {
+      const moves = ns.movablePositions(pieces, p);
+      for (const move of moves) {
+        const target = ns.pieceAt(pieces, move.row, move.col);
+        if (target && target.side === side && !threatened.includes(target.id)) {
           threatened.push(target.id);
         }
       }

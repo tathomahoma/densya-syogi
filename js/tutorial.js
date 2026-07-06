@@ -2,117 +2,91 @@
 
 window.DenshaShogi = window.DenshaShogi || {};
 
-(function(ns) {
+((ns) => {
   'use strict';
 
-  var TOTAL_STEPS = 6;
-  var currentStep = 0;
-  var timers = [];
-  var active = false;
-  var completeFn = null;
-  var skipFn = null;
+  const TOTAL_STEPS = 6;
+  let currentStep = 0;
+  let timers = [];
+  let active = false;
+  let completeFn = null;
+  let skipFn = null;
 
-  function addTimer(fn, delay) {
+  const addTimer = (fn, delay) => {
     if (!active) return;
-    var id = setTimeout(function() {
+    const id = setTimeout(() => {
       if (active) fn();
     }, delay);
     timers.push(id);
-  }
+  };
 
-  function clearTimers() {
-    for (var i = 0; i < timers.length; i++) clearTimeout(timers[i]);
+  const clearTimers = () => {
+    for (const id of timers) clearTimeout(id);
     timers = [];
-  }
+  };
 
-  function getBoard() {
-    return document.getElementById('tutorial-board');
-  }
+  const getBoard = () => document.getElementById('tutorial-board');
 
-  function getCell(row, col) {
-    return getBoard().querySelector('[data-row="' + row + '"][data-col="' + col + '"]');
-  }
+  const getCell = (row, col) =>
+    getBoard().querySelector(`[data-row="${row}"][data-col="${col}"]`);
 
-  function createPiece(p) {
-    var el = document.createElement('div');
-    el.classList.add('piece', 'piece-' + p.side);
-    if (p.promoted) el.classList.add('piece-promoted');
-    var info = ns.PIECE_TYPES[p.type];
-    var name = p.promoted ? info.promotedName : info.name;
-    var img = document.createElement('img');
-    img.src = ns.pieceImage(p);
-    img.alt = name;
-    img.classList.add('piece-img');
-    img.draggable = false;
-    el.appendChild(img);
-    if (p.promoted) {
-      var badge = document.createElement('div');
-      badge.classList.add('promoted-badge');
-      badge.textContent = '★';
-      el.appendChild(badge);
-    }
-    return el;
-  }
-
-  function buildBoard(rows, cols, pieces) {
-    var board = getBoard();
+  const buildBoard = (rows, cols, pieces) => {
+    const board = getBoard();
     board.innerHTML = '';
-    board.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
-    board.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
+    board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-    for (var r = rows; r >= 1; r--) {
-      for (var c = 1; c <= cols; c++) {
-        var cell = document.createElement('div');
+    for (let r = rows; r >= 1; r--) {
+      for (let c = 1; c <= cols; c++) {
+        const cell = document.createElement('div');
         cell.classList.add('cell');
         cell.classList.add((r + c) % 2 === 0 ? 'cell-light' : 'cell-dark');
         cell.dataset.row = String(r);
         cell.dataset.col = String(c);
-        for (var i = 0; i < pieces.length; i++) {
-          if (pieces[i].row === r && pieces[i].col === c) {
-            cell.appendChild(createPiece(pieces[i]));
-            break;
-          }
+        const piece = pieces.find((p) => p.row === r && p.col === c);
+        if (piece) {
+          cell.appendChild(ns.createPieceElement(piece));
         }
         board.appendChild(cell);
       }
     }
-  }
+  };
 
-  function showPointer(row, col) {
-    var cell = getCell(row, col);
-    var ptr = document.getElementById('tutorial-pointer');
+  const showPointer = (row, col) => {
+    const cell = getCell(row, col);
+    const ptr = document.getElementById('tutorial-pointer');
     if (!cell || !ptr) return;
-    var board = getBoard();
-    var bRect = board.getBoundingClientRect();
-    var cRect = cell.getBoundingClientRect();
-    ptr.style.left = (cRect.left - bRect.left + cRect.width / 2) + 'px';
-    ptr.style.top = (cRect.top - bRect.top + cRect.height * 0.7) + 'px';
+    const board = getBoard();
+    const bRect = board.getBoundingClientRect();
+    const cRect = cell.getBoundingClientRect();
+    ptr.style.left = `${cRect.left - bRect.left + cRect.width / 2}px`;
+    ptr.style.top = `${cRect.top - bRect.top + cRect.height * 0.7}px`;
     ptr.style.display = 'block';
-  }
+  };
 
-  function hidePointer() {
-    var ptr = document.getElementById('tutorial-pointer');
+  const hidePointer = () => {
+    const ptr = document.getElementById('tutorial-pointer');
     if (ptr) ptr.style.display = 'none';
-  }
+  };
 
-  function tapEffect() {
-    var ptr = document.getElementById('tutorial-pointer');
+  const tapEffect = () => {
+    const ptr = document.getElementById('tutorial-pointer');
     if (!ptr) return;
     ptr.style.transform = 'translate(-50%, -50%) scale(0.7)';
-    addTimer(function() {
+    addTimer(() => {
       ptr.style.transform = 'translate(-50%, -50%) scale(1)';
     }, 150);
-  }
+  };
 
-  function animateSlide(fR, fC, tR, tC, cb) {
-    var from = getCell(fR, fC);
-    var to = getCell(tR, tC);
+  const animateSlide = (fR, fC, tR, tC, cb) => {
+    const from = getCell(fR, fC);
+    const to = getCell(tR, tC);
     if (!from || !to) { if (cb) cb(); return; }
-    var el = from.querySelector('.piece');
+    const el = from.querySelector('.piece');
     if (!el) { if (cb) cb(); return; }
 
-    var fRect = from.getBoundingClientRect();
-    var tRect = to.getBoundingClientRect();
+    const fRect = from.getBoundingClientRect();
+    const tRect = to.getBoundingClientRect();
 
     el.style.position = 'relative';
     el.style.zIndex = '10';
@@ -120,22 +94,22 @@ window.DenshaShogi = window.DenshaShogi || {};
     el.style.left = '0px';
     el.style.top = '0px';
 
-    requestAnimationFrame(function() {
-      el.style.left = (tRect.left - fRect.left) + 'px';
-      el.style.top = (tRect.top - fRect.top) + 'px';
+    requestAnimationFrame(() => {
+      el.style.left = `${tRect.left - fRect.left}px`;
+      el.style.top = `${tRect.top - fRect.top}px`;
     });
 
-    addTimer(function() {
+    addTimer(() => {
       el.style.cssText = '';
       from.removeChild(el);
       to.appendChild(el);
       if (cb) cb();
     }, 280);
-  }
+  };
 
   // --- 各ステップのアニメーション ---
 
-  function runStep1() {
+  const runStep1 = () => {
     buildBoard(4, 5, [
       { side: 'blue', type: 'kamotsu', row: 4, col: 1 },
       { side: 'blue', type: 'shinkansen', row: 4, col: 3 },
@@ -150,104 +124,111 @@ window.DenshaShogi = window.DenshaShogi || {};
     ]);
     hidePointer();
 
-    var pieces = getBoard().querySelectorAll('.piece');
-    for (var i = 0; i < pieces.length; i++) {
-      pieces[i].style.opacity = '0';
-      pieces[i].style.transition = 'opacity 0.3s';
+    const pieces = getBoard().querySelectorAll('.piece');
+    for (const piece of pieces) {
+      piece.style.opacity = '0';
+      piece.style.transition = 'opacity 0.3s';
     }
 
-    var idx = 0;
-    function show() {
+    let idx = 0;
+    const show = () => {
       if (idx < pieces.length) {
         pieces[idx].style.opacity = '1';
         idx++;
         addTimer(show, 200);
       }
-    }
+    };
     addTimer(show, 400);
-  }
+  };
 
-  function runStep2() {
+  const runStep2 = () => {
     buildBoard(3, 3, [{ side: 'red', type: 'futsuu', row: 1, col: 2 }]);
 
-    function loop() {
-      var c = getCell(1, 2);
+    const loop = () => {
+      const c = getCell(1, 2);
       if (c) c.classList.remove('selected');
       hidePointer();
 
-      addTimer(function() { showPointer(1, 2); }, 400);
-      addTimer(function() { tapEffect(); }, 1000);
-      addTimer(function() {
-        var c2 = getCell(1, 2);
+      addTimer(() => showPointer(1, 2), 400);
+      addTimer(() => tapEffect(), 1000);
+      addTimer(() => {
+        const c2 = getCell(1, 2);
         if (c2) c2.classList.add('selected');
         ns.playSelectSound();
       }, 1200);
-      addTimer(function() {
-        var c3 = getCell(1, 2);
+      addTimer(() => {
+        const c3 = getCell(1, 2);
         if (c3) c3.classList.remove('selected');
         hidePointer();
         addTimer(loop, 400);
       }, 3200);
-    }
+    };
     loop();
-  }
+  };
 
-  function runStep3() {
-    function loop() {
+  const runStep3 = () => {
+    const loop = () => {
       buildBoard(3, 3, [{ side: 'red', type: 'futsuu', row: 1, col: 2 }]);
 
-      addTimer(function() {
-        var c = getCell(1, 2);
+      addTimer(() => {
+        const c = getCell(1, 2);
         if (c) c.classList.add('selected');
-        var m = getCell(2, 2);
+        const m = getCell(2, 2);
         if (m) m.classList.add('movable');
       }, 200);
-      addTimer(function() { showPointer(2, 2); }, 600);
-      addTimer(function() { tapEffect(); }, 1200);
-      addTimer(function() {
-        var c = getCell(1, 2);
+      addTimer(() => showPointer(2, 2), 600);
+      addTimer(() => tapEffect(), 1200);
+      addTimer(() => {
+        const c = getCell(1, 2);
         if (c) c.classList.remove('selected');
-        var m = getCell(2, 2);
+        const m = getCell(2, 2);
         if (m) m.classList.remove('movable');
         hidePointer();
         ns.playMoveSound('futsuu');
-        animateSlide(1, 2, 2, 2, function() {
+        animateSlide(1, 2, 2, 2, () => {
           addTimer(loop, 1200);
         });
       }, 1400);
-    }
+    };
     loop();
-  }
+  };
 
-  function runStep4() {
-    var pieces = [
-      { side: 'red', type: 'tokkyuu', row: 1, col: 2 },
-      { side: 'blue', type: 'futsuu', row: 2, col: 2 },
+  /**
+   * 「あかが あおを 取る」デモの共通ループ（ステップ4・6で共用）。
+   * @param {string} attackerType - あか側の駒種
+   * @param {string} defenderType - あお側の駒種
+   * @param {function|null} afterCapture - 取った直後に呼ぶ演出
+   * @param {number} loopDelay - 次ループまでの待ち時間 ms
+   */
+  const runCaptureDemo = (attackerType, defenderType, afterCapture, loopDelay) => {
+    const pieces = [
+      { side: 'red', type: attackerType, row: 1, col: 2 },
+      { side: 'blue', type: defenderType, row: 2, col: 2 },
     ];
 
-    function loop() {
+    const loop = () => {
       buildBoard(3, 3, pieces);
 
-      addTimer(function() {
-        var c = getCell(1, 2);
+      addTimer(() => {
+        const c = getCell(1, 2);
         if (c) c.classList.add('selected');
-        var m = getCell(2, 2);
+        const m = getCell(2, 2);
         if (m) m.classList.add('capturable');
       }, 200);
-      addTimer(function() { showPointer(2, 2); }, 600);
-      addTimer(function() { tapEffect(); }, 1200);
-      addTimer(function() {
-        var c = getCell(1, 2);
+      addTimer(() => showPointer(2, 2), 600);
+      addTimer(() => tapEffect(), 1200);
+      addTimer(() => {
+        const c = getCell(1, 2);
         if (c) c.classList.remove('selected');
-        var m = getCell(2, 2);
+        const m = getCell(2, 2);
         if (m) m.classList.remove('capturable');
         hidePointer();
 
         // 取られる駒を縮小
-        addTimer(function() {
-          var t = getCell(2, 2);
+        addTimer(() => {
+          const t = getCell(2, 2);
           if (t) {
-            var bp = t.querySelector('.piece-blue');
+            const bp = t.querySelector('.piece-blue');
             if (bp) {
               bp.style.transition = 'transform 0.2s, opacity 0.2s';
               bp.style.transform = 'scale(0)';
@@ -256,124 +237,80 @@ window.DenshaShogi = window.DenshaShogi || {};
           }
         }, 100);
 
-        ns.playMoveSound('tokkyuu');
-        animateSlide(1, 2, 2, 2, function() {
-          var t = getCell(2, 2);
+        ns.playMoveSound(attackerType);
+        animateSlide(1, 2, 2, 2, () => {
+          const t = getCell(2, 2);
           if (t) {
-            var bp = t.querySelector('.piece-blue');
+            const bp = t.querySelector('.piece-blue');
             if (bp && bp.parentNode) bp.remove();
           }
           ns.playCaptureSound();
-          addTimer(loop, 1800);
+          if (afterCapture) afterCapture();
+          addTimer(loop, loopDelay);
         });
       }, 1400);
-    }
+    };
     loop();
-  }
+  };
 
-  function runStep5() {
-    function loop() {
+  const runStep4 = () => {
+    runCaptureDemo('tokkyuu', 'futsuu', null, 1800);
+  };
+
+  const runStep5 = () => {
+    const loop = () => {
       buildBoard(4, 3, [{ side: 'red', type: 'futsuu', row: 2, col: 2 }]);
 
       // 成りゾーン表示
-      for (var r = 3; r <= 4; r++) {
-        for (var c = 1; c <= 3; c++) {
-          var zc = getCell(r, c);
+      for (let r = 3; r <= 4; r++) {
+        for (let c = 1; c <= 3; c++) {
+          const zc = getCell(r, c);
           if (zc) zc.classList.add('promotion-zone');
         }
       }
 
-      addTimer(function() {
-        var c = getCell(2, 2);
+      addTimer(() => {
+        const c = getCell(2, 2);
         if (c) c.classList.add('selected');
-        var m = getCell(3, 2);
+        const m = getCell(3, 2);
         if (m) m.classList.add('movable');
       }, 200);
-      addTimer(function() { showPointer(3, 2); }, 600);
-      addTimer(function() { tapEffect(); }, 1200);
-      addTimer(function() {
-        var c = getCell(2, 2);
+      addTimer(() => showPointer(3, 2), 600);
+      addTimer(() => tapEffect(), 1200);
+      addTimer(() => {
+        const c = getCell(2, 2);
         if (c) c.classList.remove('selected');
-        var m = getCell(3, 2);
+        const m = getCell(3, 2);
         if (m) m.classList.remove('movable');
         hidePointer();
         ns.playMoveSound('futsuu');
-        animateSlide(2, 2, 3, 2, function() {
-          var cell = getCell(3, 2);
+        animateSlide(2, 2, 3, 2, () => {
+          const cell = getCell(3, 2);
           if (cell) {
-            var p = cell.querySelector('.piece');
+            const p = cell.querySelector('.piece');
             if (p) {
-              p.classList.add('piece-promoted');
-              var badge = document.createElement('div');
-              badge.classList.add('promoted-badge');
-              badge.textContent = '★';
-              p.appendChild(badge);
+              // 成り後の駒要素に差し替え（かいそくアイコン＋★バッジ）
+              cell.replaceChild(ns.createPieceElement({ side: 'red', type: 'futsuu', promoted: true }), p);
             }
           }
           ns.playPromoteSound();
           addTimer(loop, 2200);
         });
       }, 1400);
-    }
+    };
     loop();
-  }
+  };
 
-  function runStep6() {
-    var pieces = [
-      { side: 'red', type: 'shinkansen', row: 1, col: 2 },
-      { side: 'blue', type: 'shinkansen', row: 2, col: 2 },
-    ];
+  const runStep6 = () => {
+    runCaptureDemo('shinkansen', 'shinkansen', () => {
+      addTimer(() => {
+        ns.playWinSound();
+        ns.playConfetti();
+      }, 300);
+    }, 5000);
+  };
 
-    function loop() {
-      buildBoard(3, 3, pieces);
-
-      addTimer(function() {
-        var c = getCell(1, 2);
-        if (c) c.classList.add('selected');
-        var m = getCell(2, 2);
-        if (m) m.classList.add('capturable');
-      }, 200);
-      addTimer(function() { showPointer(2, 2); }, 600);
-      addTimer(function() { tapEffect(); }, 1200);
-      addTimer(function() {
-        var c = getCell(1, 2);
-        if (c) c.classList.remove('selected');
-        var m = getCell(2, 2);
-        if (m) m.classList.remove('capturable');
-        hidePointer();
-
-        addTimer(function() {
-          var t = getCell(2, 2);
-          if (t) {
-            var bp = t.querySelector('.piece-blue');
-            if (bp) {
-              bp.style.transition = 'transform 0.2s, opacity 0.2s';
-              bp.style.transform = 'scale(0)';
-              bp.style.opacity = '0';
-            }
-          }
-        }, 100);
-
-        ns.playMoveSound('shinkansen');
-        animateSlide(1, 2, 2, 2, function() {
-          var t = getCell(2, 2);
-          if (t) {
-            var bp = t.querySelector('.piece-blue');
-            if (bp && bp.parentNode) bp.remove();
-          }
-          ns.playCaptureSound();
-          addTimer(function() {
-            ns.playWinSound();
-            ns.playConfetti();
-          }, 300);
-          addTimer(loop, 5000);
-        });
-      }, 1400);
-    }
-    loop();
-  }
-
-  var STEP_MESSAGES = [
+  const STEP_MESSAGES = [
     'これは でんしゃしょうぎ だよ',
     'じぶんの でんしゃを タップしてね',
     'みどりの まるに タップ',
@@ -382,37 +319,37 @@ window.DenshaShogi = window.DenshaShogi || {};
     'あいての しんかんせん☆ を\nとれたら かち！',
   ];
 
-  var STEP_RUNNERS = [runStep1, runStep2, runStep3, runStep4, runStep5, runStep6];
+  const STEP_RUNNERS = [runStep1, runStep2, runStep3, runStep4, runStep5, runStep6];
 
-  function renderStep() {
+  const renderStep = () => {
     clearTimers();
     hidePointer();
 
-    var msg = document.getElementById('tutorial-message');
+    const msg = document.getElementById('tutorial-message');
     msg.textContent = STEP_MESSAGES[currentStep];
 
     // ステップインジケータ
-    var dotsEl = document.getElementById('tutorial-dots');
-    var dots = '';
-    for (var i = 0; i < TOTAL_STEPS; i++) {
+    const dotsEl = document.getElementById('tutorial-dots');
+    let dots = '';
+    for (let i = 0; i < TOTAL_STEPS; i++) {
       dots += (i === currentStep ? '● ' : '○ ');
     }
     dotsEl.textContent = dots.trim();
 
     // ボタン更新
-    var prev = document.getElementById('tutorial-prev');
-    var next = document.getElementById('tutorial-next');
+    const prev = document.getElementById('tutorial-prev');
+    const next = document.getElementById('tutorial-next');
     prev.disabled = currentStep === 0;
     prev.classList.toggle('tutorial-btn-disabled', currentStep === 0);
     next.textContent = currentStep === TOTAL_STEPS - 1 ? 'はじめる！' : 'つぎへ →';
 
     // ボードアニメーション開始
-    addTimer(function() {
+    addTimer(() => {
       STEP_RUNNERS[currentStep]();
     }, 100);
-  }
+  };
 
-  function finish(skipped) {
+  const finish = (skipped) => {
     active = false;
     clearTimers();
     localStorage.setItem('tutorialSeen', 'true');
@@ -424,11 +361,11 @@ window.DenshaShogi = window.DenshaShogi || {};
     } else if (completeFn) {
       completeFn();
     }
-  }
+  };
 
   // --- 公開 API ---
 
-  ns.startTutorial = function(onComplete, onSkip) {
+  ns.startTutorial = (onComplete, onSkip) => {
     active = true;
     currentStep = 0;
     completeFn = onComplete || null;
@@ -437,20 +374,20 @@ window.DenshaShogi = window.DenshaShogi || {};
     renderStep();
   };
 
-  ns.stopTutorial = function() {
+  ns.stopTutorial = () => {
     active = false;
     clearTimers();
   };
 
-  ns.initTutorialNav = function() {
-    document.getElementById('tutorial-prev').addEventListener('click', function() {
+  ns.initTutorialNav = () => {
+    document.getElementById('tutorial-prev').addEventListener('click', () => {
       if (currentStep > 0) {
         currentStep--;
         renderStep();
       }
     });
 
-    document.getElementById('tutorial-next').addEventListener('click', function() {
+    document.getElementById('tutorial-next').addEventListener('click', () => {
       if (currentStep < TOTAL_STEPS - 1) {
         currentStep++;
         renderStep();
@@ -459,7 +396,7 @@ window.DenshaShogi = window.DenshaShogi || {};
       }
     });
 
-    document.getElementById('tutorial-skip').addEventListener('click', function() {
+    document.getElementById('tutorial-skip').addEventListener('click', () => {
       finish(true);
     });
   };
